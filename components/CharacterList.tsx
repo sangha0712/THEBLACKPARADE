@@ -21,7 +21,7 @@ const CharacterList: React.FC<CharacterListProps> = ({ onBack }) => {
 
     if (loading) {
         return (
-            <div className="relative z-10 w-[90%] max-w-[500px] p-10 text-center">
+            <div className="relative z-10 w-full h-full flex flex-col items-center justify-center p-10 text-center">
                 <div className="text-red-500 text-xl font-mono tracking-widest animate-pulse">
                     {'>'} DECRYPTING ARCHIVES...
                     <br/>
@@ -32,31 +32,31 @@ const CharacterList: React.FC<CharacterListProps> = ({ onBack }) => {
     }
 
     return (
-        <div className="relative z-10 w-[95%] max-w-[1200px] h-[85vh] bg-[#0a0a0a] border border-[#333] flex flex-col shadow-[0_0_30px_rgba(0,0,0,0.9)] animate-[fadeIn_1s_forwards]">
+        <div className="relative z-10 w-full h-full bg-[#0a0a0a] flex flex-col animate-[fadeIn_0.5s_forwards]">
             
-            {/* Header (Fixed) */}
-            <div className="shrink-0 p-8 pb-4 border-b border-[#333] flex flex-col md:flex-row justify-center items-center gap-4 bg-[#0a0a0a] z-20">
-                <h2 className="text-center text-white text-3xl tracking-[0.2em] drop-shadow-[0_0_10px_rgba(255,0,0,0.5)]">
-                    ACCESS GRANTED // PERSONNEL FILES
+            {/* Header */}
+            <div className="shrink-0 p-6 border-b border-[#333] flex flex-row justify-between items-center bg-[#0a0a0a] z-20 sticky top-0">
+                <h2 className="text-white text-xl md:text-2xl tracking-[0.2em] drop-shadow-[0_0_10px_rgba(255,0,0,0.5)] truncate">
+                    PERSONNEL FILES
                 </h2>
                 <button 
                     onClick={onBack}
-                    className="md:absolute md:right-8 bg-[#0f0f0f] border border-red-800 text-red-600 px-6 py-2 hover:bg-red-600 hover:text-black transition-all duration-300 font-mono text-sm font-bold tracking-wider shadow-[0_0_10px_rgba(255,0,0,0.2)] hover:shadow-[0_0_20px_rgba(255,0,0,0.6)]"
+                    className="bg-[#0f0f0f] border border-red-800 text-red-600 px-4 py-1 md:px-6 md:py-2 hover:bg-red-600 hover:text-black transition-all duration-300 font-mono text-xs md:text-sm font-bold tracking-wider shadow-[0_0_10px_rgba(255,0,0,0.2)] hover:shadow-[0_0_20px_rgba(255,0,0,0.6)] whitespace-nowrap"
                 >
-                    [ DISCONNECT ]
+                    [ LOGOUT ]
                 </button>
             </div>
             
             {/* Scrollable Content Area */}
-            <div className="flex-1 overflow-y-auto p-8 custom-scrollbar [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-[#050505] [&::-webkit-scrollbar-thumb]:bg-[#333] [&::-webkit-scrollbar-thumb]:hover:bg-red-600 transition-colors">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="flex-1 overflow-y-auto p-6 md:p-8 custom-scrollbar [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-[#050505] [&::-webkit-scrollbar-thumb]:bg-[#333] [&::-webkit-scrollbar-thumb]:hover:bg-red-600 transition-colors">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {characters.map((char: Character) => (
                         <div 
                             key={char.id} 
-                            className="group bg-[#0f0f0f] border border-[#333] hover:border-red-500 transition-all duration-300 flex flex-col items-center overflow-hidden hover:shadow-[0_0_15px_rgba(255,0,0,0.3)] hover:-translate-y-1"
+                            className="group bg-[#0f0f0f] border border-[#333] hover:border-red-500 transition-all duration-300 flex flex-col items-center overflow-hidden hover:shadow-[0_0_15px_rgba(255,0,0,0.3)] hover:-translate-y-1 rounded-sm"
                         >
                             {/* Profile Image Section */}
-                            <div className="w-full h-64 bg-black overflow-hidden relative border-b border-[#222] group-hover:border-red-500/50 transition-colors">
+                            <div className="w-full h-48 bg-black overflow-hidden relative border-b border-[#222] group-hover:border-red-500/50 transition-colors">
                                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_0%,_#000_100%)] z-10 opacity-50 pointer-events-none"></div>
                                 {char.image ? (
                                     <img 
@@ -66,7 +66,7 @@ const CharacterList: React.FC<CharacterListProps> = ({ onBack }) => {
                                     />
                                 ) : (
                                     <div className="w-full h-full flex items-center justify-center text-[#333] font-mono text-4xl tracking-widest">
-                                        SECTION {char.id}
+                                        SEC-{char.id}
                                     </div>
                                 )}
                                 {/* Tech overlay lines */}
@@ -74,18 +74,18 @@ const CharacterList: React.FC<CharacterListProps> = ({ onBack }) => {
                             </div>
 
                             {/* Text Content */}
-                            <div className="p-6 text-center w-full relative">
+                            <div className="p-4 text-center w-full relative flex-1 flex flex-col justify-center">
                                  {/* Decorative corners */}
                                  <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-[#555] group-hover:border-red-500 transition-colors"></div>
                                  <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-[#555] group-hover:border-red-500 transition-colors"></div>
                                  <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-[#555] group-hover:border-red-500 transition-colors"></div>
                                  <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-[#555] group-hover:border-red-500 transition-colors"></div>
 
-                                <div className="text-2xl font-bold text-white mb-2 tracking-wider group-hover:text-red-500 transition-colors">
+                                <div className="text-xl font-bold text-white mb-2 tracking-wider group-hover:text-red-500 transition-colors">
                                     {char.name}
                                 </div>
                                 <div className="h-[1px] w-12 bg-gray-700 mx-auto mb-3 group-hover:bg-red-500 transition-colors"></div>
-                                <div className="text-sm text-[#888] italic leading-relaxed px-2">
+                                <div className="text-xs text-[#888] italic leading-relaxed px-2 line-clamp-3">
                                     {char.description}
                                 </div>
                             </div>
@@ -95,7 +95,7 @@ const CharacterList: React.FC<CharacterListProps> = ({ onBack }) => {
             </div>
 
             {/* Footer (Fixed) */}
-            <div className="shrink-0 p-4 border-t border-[#333] flex justify-between items-center text-xs text-[#555] font-mono bg-[#0a0a0a] z-20">
+            <div className="shrink-0 p-3 border-t border-[#333] flex justify-between items-center text-[10px] md:text-xs text-[#555] font-mono bg-[#0a0a0a] z-20">
                 <span>SECURE CONNECTION ESTABLISHED</span>
                 <span className="animate-pulse text-green-700">● LIVE</span>
             </div>

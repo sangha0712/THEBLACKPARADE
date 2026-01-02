@@ -83,17 +83,24 @@ const INCIDENT_REPORTS = [
     }
 ];
 
-type AnomalyState = 'NONE' | 'WARNING' | 'LOGS' | 'LIST';
+type AnomalyState = 'NONE' | 'WARNING' | 'INPUT' | 'LOGS' | 'LIST';
+type TerminationStage = 'NONE' | 'BLACKOUT' | 'TURN_AROUND' | 'DO_NOT_TURN_AROUND' | 'FINAL_BLACKOUT';
 
 const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess, onLoginFail, currentAttempts, maxAttempts }) => {
     const [password, setPassword] = useState('');
+    const [anomalyPassword, setAnomalyPassword] = useState(''); // Separate state for anomaly password
     const [isShaking, setIsShaking] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [message, setMessage] = useState<{ text: string; type: 'error' | 'success' | 'neutral' } | null>(null);
+    const [anomalyError, setAnomalyError] = useState<string | null>(null);
     
     // Anomaly State Management
     const [anomalyState, setAnomalyState] = useState<AnomalyState>('NONE');
     const [horrorLogs, setHorrorLogs] = useState<string[]>([]);
+
+    // Termination Sequence State
+    const [anomalyFailCount, setAnomalyFailCount] = useState(0);
+    const [terminationStage, setTerminationStage] = useState<TerminationStage>('NONE');
     
     // Standard logs state
     const [logs, setLogs] = useState<string[]>([]);
@@ -113,6 +120,22 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess, onLoginFail, curr
         if (logsEndRef.current) logsEndRef.current.scrollIntoView({ behavior: 'smooth' });
         if (horrorLogsEndRef.current) horrorLogsEndRef.current.scrollIntoView({ behavior: 'auto' });
     }, [logs, horrorLogs]);
+
+    // Termination sequence timer
+    useEffect(() => {
+        if (terminationStage === 'BLACKOUT') {
+            const timer = setTimeout(() => setTerminationStage('TURN_AROUND'), 2000);
+            return () => clearTimeout(timer);
+        }
+        if (terminationStage === 'TURN_AROUND') {
+            const timer = setTimeout(() => setTerminationStage('DO_NOT_TURN_AROUND'), 500);
+            return () => clearTimeout(timer);
+        }
+        if (terminationStage === 'DO_NOT_TURN_AROUND') {
+            const timer = setTimeout(() => setTerminationStage('FINAL_BLACKOUT'), 5000);
+            return () => clearTimeout(timer);
+        }
+    }, [terminationStage]);
 
     // Standard Login Log generation
     useEffect(() => {
@@ -162,8 +185,28 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess, onLoginFail, curr
         }
     };
 
+    const handleAnomalyAttempt = () => {
+        const normalizedInput = anomalyPassword.replace(/\s+/g, '').toUpperCase();
+        if (normalizedInput === 'DONOTTURNAROUND') {
+            startAnomalySequence();
+            setAnomalyFailCount(0);
+        } else {
+            const newCount = anomalyFailCount + 1;
+            setAnomalyFailCount(newCount);
+            
+            if (newCount >= 5) {
+                setTerminationStage('BLACKOUT');
+            } else {
+                setAnomalyError('ACCESS DENIED. INCORRECT SECURITY CODE.');
+                setIsShaking(true);
+                setAnomalyPassword('');
+            }
+        }
+    };
+
     const startAnomalySequence = () => {
         setAnomalyState('LOGS');
+        setAnomalyError(null);
         
         let interval: ReturnType<typeof setInterval>;
         let counter = 0;
@@ -184,14 +227,39 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess, onLoginFail, curr
         }, 8500); 
     };
 
+    // 1. Check Termination Stage first (Highest priority override)
+    if (terminationStage !== 'NONE') {
+        return (
+             <div className="absolute inset-0 z-[9999] bg-black flex flex-col items-center justify-center overflow-hidden">
+                {terminationStage === 'TURN_AROUND' && (
+                    <div className="text-gray-400 text-3xl md:text-5xl font-mono tracking-[0.5em] animate-pulse font-bold">
+                        TURN AROUND
+                    </div>
+                )}
+                {terminationStage === 'DO_NOT_TURN_AROUND' && (
+                    <div className="relative">
+                        <div className="text-[#ff0000] text-5xl md:text-8xl font-black font-mono tracking-tighter animate-glitch drop-shadow-[0_0_20px_rgba(255,0,0,1)] text-center leading-none scale-150">
+                            DO NOT<br/>TURN AROUND
+                        </div>
+                        {/* Extra noise/glitch layers for intensity */}
+                        <div className="absolute inset-0 text-[#ff0000] opacity-50 blur-[2px] animate-pulse scale-150 text-5xl md:text-8xl font-black font-mono tracking-tighter text-center leading-none pointer-events-none">
+                             DO NOT<br/>TURN AROUND
+                        </div>
+                    </div>
+                )}
+                {/* FINAL_BLACKOUT renders just the black container */}
+            </div>
+        );
+    }
+
     // Render Logic based on State
     if (anomalyState === 'LOGS') {
         return (
-            <div className="relative z-10 w-[95%] max-w-[900px] h-[600px] bg-black border-4 border-red-600 p-8 flex flex-col shadow-[0_0_50px_rgba(255,0,0,0.5)] animate-pulse">
+            <div className="relative w-full h-full bg-black border-none p-8 flex flex-col animate-pulse">
                 <h1 className="text-4xl text-red-600 font-bold mb-4 tracking-[0.2em] border-b-2 border-red-800 pb-2">
                     SYSTEM BREACH IN PROGRESS
                 </h1>
-                <div className="flex-1 overflow-hidden font-mono text-xl text-red-500 bg-red-950/20 p-4">
+                <div className="flex-1 overflow-hidden font-mono text-xl text-red-500 bg-red-950/20 p-4 border border-red-900/50">
                     {horrorLogs.map((log, i) => (
                         <div key={i} className="mb-1 drop-shadow-[2px_2px_0_rgba(0,0,0,1)]">
                             {log}
@@ -205,9 +273,9 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess, onLoginFail, curr
 
     if (anomalyState === 'LIST') {
         return (
-            <div className="relative z-10 w-[95%] max-w-[1000px] h-[80vh] bg-[#050000] border-2 border-red-900 flex flex-col shadow-[0_0_100px_rgba(255,0,0,0.2)]">
-                <div className="p-6 border-b border-red-800 bg-red-950/30 flex justify-between items-center">
-                    <h2 className="text-3xl text-red-600 font-bold tracking-widest drop-shadow-[0_0_10px_rgba(255,0,0,0.8)]">
+            <div className="relative w-full h-full bg-[#050000] flex flex-col">
+                <div className="p-6 border-b border-red-800 bg-red-950/30 flex justify-between items-center shrink-0">
+                    <h2 className="text-2xl md:text-3xl text-red-600 font-bold tracking-widest drop-shadow-[0_0_10px_rgba(255,0,0,0.8)]">
                         [RESTRICTED] INCIDENT ARCHIVE
                     </h2>
                     <button 
@@ -257,7 +325,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess, onLoginFail, curr
                     </div>
                     <div className="flex gap-6">
                         <button
-                            onClick={startAnomalySequence}
+                            onClick={() => setAnomalyState('INPUT')}
                             className="border border-red-600 text-red-600 px-8 py-3 hover:bg-red-600 hover:text-black transition-all duration-300 font-bold tracking-widest text-lg shadow-[0_0_10px_rgba(255,0,0,0.2)]"
                         >
                             접근
@@ -269,6 +337,48 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess, onLoginFail, curr
                             취소
                         </button>
                     </div>
+                </div>
+            )}
+
+            {anomalyState === 'INPUT' && (
+                <div className="absolute inset-0 bg-black/95 flex flex-col items-center justify-center p-8 z-50 border-2 border-red-900 animate-[fadeIn_0.2s_ease-out]">
+                    <h2 className="text-red-600 text-3xl font-bold mb-8 tracking-[0.3em] drop-shadow-[0_0_10px_rgba(255,0,0,0.8)]">
+                        SECURITY CLEARANCE REQUIRED
+                    </h2>
+                    <input 
+                        type="password" 
+                        value={anomalyPassword}
+                        onChange={(e) => setAnomalyPassword(e.target.value)}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') handleAnomalyAttempt();
+                        }}
+                        placeholder="ENTER ACCESS CODE"
+                        className="w-[80%] max-w-[500px] bg-[#1a0000] border border-red-800 text-red-500 p-4 text-2xl font-mono outline-none mb-8 text-center transition-all duration-300 focus:border-red-500 focus:shadow-[0_0_20px_rgba(255,0,0,0.3)] placeholder-red-900/50 tracking-widest"
+                        autoFocus
+                    />
+                    <div className="flex gap-6">
+                        <button
+                            onClick={handleAnomalyAttempt}
+                            className="border border-red-600 bg-red-950/20 text-red-500 px-10 py-3 hover:bg-red-600 hover:text-black transition-all duration-300 font-bold tracking-widest text-lg shadow-[0_0_15px_rgba(255,0,0,0.1)]"
+                        >
+                            VERIFY
+                        </button>
+                        <button
+                            onClick={() => {
+                                setAnomalyState('NONE');
+                                setAnomalyPassword('');
+                                setAnomalyError(null);
+                            }}
+                            className="border border-gray-800 text-gray-600 px-10 py-3 hover:bg-gray-900 hover:text-gray-400 transition-all duration-300 font-bold tracking-widest text-lg"
+                        >
+                            ABORT
+                        </button>
+                    </div>
+                    {anomalyError && (
+                        <div className="mt-8 text-red-500 font-bold tracking-widest animate-pulse border-t border-red-900 pt-2">
+                            {anomalyError}
+                        </div>
+                    )}
                 </div>
             )}
 
@@ -322,7 +432,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess, onLoginFail, curr
                     <div className="mt-8">
                         <button
                             onClick={() => setAnomalyState('WARNING')}
-                            className="text-[#333] text-sm hover:text-red-600 tracking-[0.3em] transition-all duration-300 font-bold border-b border-transparent hover:border-red-600 pb-1"
+                            className="bg-[#222] text-white border border-white py-4 px-12 text-xl tracking-widest transition-all duration-300 hover:bg-red-500 hover:text-black hover:font-bold hover:border-red-500 cursor-pointer"
                         >
                             [ 이상현상 ]
                         </button>

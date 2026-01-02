@@ -46,7 +46,7 @@ const TransitionScreen: React.FC<TransitionScreenProps> = ({ onComplete }) => {
     }, [onComplete]);
 
     return (
-        <div className="fixed inset-0 bg-black z-[100] flex flex-col items-center justify-center font-mono overflow-hidden">
+        <div className="absolute inset-0 bg-black z-[100] flex flex-col items-center justify-center font-mono overflow-hidden">
              {/* Background Scrolling Text */}
             <div ref={scrollRef} className="absolute inset-0 p-4 text-[#00ff00] opacity-40 text-xs md:text-sm overflow-hidden leading-tight whitespace-nowrap font-bold">
                 {lines.map((line, i) => (
