@@ -7,26 +7,14 @@ const API_BASE = '/api';
 
 // --- MOCK DATA (Simulates Backend Database) ---
 const MOCK_PASSWORD = "HAPPYORDEATH";
-const MOCK_CHARACTERS: Character[] = [
-    {
-        id: '1',
-        name: 'UNIT-704',
-        description: '"명령을 대기 중입니다. 마스터."',
-        image: 'https://robohash.org/UNIT-704?set=set1&bgset=bg2&size=400x400'
-    },
-    {
-        id: '2',
-        name: '닥터 K',
-        description: '"실험체는 준비되었나? 시간이 없어."',
-        image: 'https://robohash.org/DR-K?set=set2&bgset=bg2&size=400x400'
-    },
-    {
-        id: '3',
-        name: 'Unknown_X',
-        description: '데이터 손상됨... 접근 불가 구역의 존재.',
-        image: 'https://robohash.org/UNKNOWN?set=set3&bgset=bg2&size=400x400'
-    }
-];
+
+// Updated mock characters: Generated 24 items to demonstrate scrolling
+const MOCK_CHARACTERS: Character[] = Array.from({ length: 24 }, (_, i) => ({
+    id: (i + 1).toString(),
+    name: `NAME ${i + 1}`,
+    description: 'UNKNOWN',
+    image: ''
+}));
 
 // --- UTILS ---
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
@@ -42,7 +30,13 @@ export const login = async (password: string): Promise<boolean> => {
         // Simulate network latency typical of a server handshake
         // Increased delay to allow the "hacker log" animation to play out
         await delay(2500); 
-        return password === MOCK_PASSWORD;
+        
+        // Allow case-insensitive and space-insensitive password matching
+        // e.g., "happy or death", "HAPPY OR DEATH", "happyordeath" -> "HAPPYORDEATH"
+        const normalizedInput = password.replace(/\s+/g, '').toUpperCase();
+        const normalizedTarget = MOCK_PASSWORD.replace(/\s+/g, '').toUpperCase();
+        
+        return normalizedInput === normalizedTarget;
     }
 
     try {

@@ -106,14 +106,13 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess, onLoginFail, curr
     };
 
     return (
-        <div className={`relative z-10 w-[90%] max-w-[500px] bg-[#0a0a0a] border border-[#333] p-10 text-center shadow-[0_0_20px_rgba(0,0,0,0.8)] transition-transform duration-100 ${isShaking ? 'animate-shake' : ''}`}>
-            <h1 className="text-4xl text-white mb-2 tracking-[5px] drop-shadow-[2px_2px_0_rgba(255,0,0,1)]">
+        <div className={`relative z-10 w-[90%] max-w-[800px] bg-[#0a0a0a] border border-[#333] p-16 text-center shadow-[0_0_20px_rgba(0,0,0,0.8)] transition-transform duration-100 ${isShaking ? 'animate-shake' : ''}`}>
+            <h1 className="text-6xl md:text-7xl text-white mb-6 tracking-[8px] drop-shadow-[2px_2px_0_rgba(255,0,0,1)] font-bold">
                 BLACK PARADE
             </h1>
             
-            <div className="text-sm text-[#555] mb-8 py-2 border-y border-dashed border-[#333] leading-relaxed">
-                SYSTEM: SECURE<br/>
-                SERVER: NESTJS-CORE-V9<br/>
+            <div className="text-base text-[#555] mb-10 py-4 border-y border-dashed border-[#333] leading-relaxed tracking-wider">
+                SYSTEM: SECURE // SERVER: NESTJS-CORE-V9<br/>
                 STATUS: {isLoading ? <span className="text-[#00ff00] animate-pulse">INTRUSION IN PROGRESS...</span> : 'WAITING FOR INPUT...'}
                 {currentAttempts > 0 && !isLoading && (
                      <div className="text-red-500 font-bold mt-2 animate-pulse">
@@ -124,9 +123,9 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess, onLoginFail, curr
 
             {isLoading ? (
                 // Hacker Log View
-                <div className="w-full bg-black border border-[#00ff00] p-4 mb-5 text-left h-[160px] overflow-hidden flex flex-col justify-end shadow-[inset_0_0_10px_rgba(0,255,0,0.2)]">
+                <div className="w-full bg-black border border-[#00ff00] p-6 mb-8 text-left h-[200px] overflow-hidden flex flex-col justify-end shadow-[inset_0_0_10px_rgba(0,255,0,0.2)]">
                     {logs.map((log, i) => (
-                        <div key={i} className="text-[#00ff00] font-mono text-xs leading-tight opacity-90 truncate">
+                        <div key={i} className="text-[#00ff00] font-mono text-lg leading-tight opacity-90 truncate">
                             {log}
                         </div>
                     ))}
@@ -143,21 +142,21 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess, onLoginFail, curr
                             if (e.key === 'Enter') handleAttempt();
                         }}
                         placeholder="PASSWORD"
-                        className={`w-[80%] bg-[#111] border border-[#444] text-red-500 p-4 text-xl font-mono outline-none mb-5 text-center transition-all duration-300 focus:border-red-500 focus:shadow-[0_0_10px_rgba(255,0,0,0.5)] placeholder-gray-700`}
+                        className={`w-[80%] bg-[#111] border border-[#444] text-red-500 p-6 text-3xl font-mono outline-none mb-8 text-center transition-all duration-300 focus:border-red-500 focus:shadow-[0_0_10px_rgba(255,0,0,0.5)] placeholder-gray-700`}
                     />
                     
                     <br />
                     
                     <button 
                         onClick={handleAttempt}
-                        className={`bg-[#222] text-white border border-white py-2 px-8 text-base transition-all duration-300 hover:bg-red-500 hover:text-black hover:font-bold hover:border-red-500 cursor-pointer`}
+                        className={`bg-[#222] text-white border border-white py-4 px-12 text-xl tracking-widest transition-all duration-300 hover:bg-red-500 hover:text-black hover:font-bold hover:border-red-500 cursor-pointer`}
                     >
                         접속
                     </button>
                 </>
             )}
 
-            <div className={`mt-5 min-h-[40px] text-sm font-bold ${message?.type === 'success' ? 'text-[#00ff00]' : message?.type === 'neutral' ? 'text-yellow-500' : 'text-[#ff0000]'}`}>
+            <div className={`mt-8 min-h-[40px] text-lg font-bold ${message?.type === 'success' ? 'text-[#00ff00]' : message?.type === 'neutral' ? 'text-yellow-500' : 'text-[#ff0000]'}`}>
                 {message?.text && !isLoading && (
                     <span dangerouslySetInnerHTML={{ __html: message.text.replace(/\n/g, '<br/>') }}></span>
                 )}

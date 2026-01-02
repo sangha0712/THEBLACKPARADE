@@ -5,6 +5,7 @@ import DeathScreen from './components/DeathScreen';
 import TransitionScreen from './components/TransitionScreen';
 import { AppState } from './types';
 import { MAX_ATTEMPTS } from './constants';
+import { playDeathNoise } from './utils/sound';
 
 const App: React.FC = () => {
     const [appState, setAppState] = useState<AppState>(AppState.LOGIN);
@@ -36,6 +37,7 @@ const App: React.FC = () => {
         if (newAttemptCount >= MAX_ATTEMPTS) {
             // Trigger death sequence
             setIsGlitching(true);
+            playDeathNoise();
             
             // Wait 1.5s then show death screen
             setTimeout(() => {
@@ -47,7 +49,7 @@ const App: React.FC = () => {
     };
 
     return (
-        <div className={`flex justify-center items-center h-screen w-full transition-filter duration-200 ${isGlitching ? 'animate-glitch' : ''}`}>
+        <div className={`flex justify-center items-center h-screen w-full transition-filter duration-200 ${isGlitching ? 'death-glitch' : ''}`}>
             {isGlitching && (
                 <div className="noise-bg opacity-50 mix-blend-hard-light"></div>
             )}
