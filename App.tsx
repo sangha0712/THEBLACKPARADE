@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import LoginForm from './components/LoginForm';
 import CharacterList from './components/CharacterList';
 import DeathScreen from './components/DeathScreen';
+import TransitionScreen from './components/TransitionScreen';
 import { AppState } from './types';
 import { MAX_ATTEMPTS } from './constants';
 
@@ -10,13 +11,18 @@ const App: React.FC = () => {
     const [failCount, setFailCount] = useState(0);
     const [isGlitching, setIsGlitching] = useState(false);
     const [fadeOutLogin, setFadeOutLogin] = useState(false);
+    const [showTransition, setShowTransition] = useState(false);
 
     const handleLoginSuccess = () => {
-        // Start fade out animation
+        // Start fade out animation for login form
         setFadeOutLogin(true);
-        setTimeout(() => {
-            setAppState(AppState.CHARACTERS);
-        }, 1000); // Wait for fade out
+        // Start full screen transition immediately
+        setShowTransition(true);
+    };
+    
+    const handleTransitionComplete = () => {
+        setShowTransition(false);
+        setAppState(AppState.CHARACTERS);
     };
 
     const handleLoginFail = (newAttemptCount: number) => {
@@ -39,6 +45,10 @@ const App: React.FC = () => {
         <div className={`flex justify-center items-center h-screen w-full transition-filter duration-200 ${isGlitching ? 'animate-glitch' : ''}`}>
             {isGlitching && (
                 <div className="noise-bg opacity-50 mix-blend-hard-light"></div>
+            )}
+            
+            {showTransition && (
+                <TransitionScreen onComplete={handleTransitionComplete} />
             )}
             
             {appState === AppState.LOGIN && (

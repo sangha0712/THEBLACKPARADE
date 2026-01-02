@@ -37,7 +37,8 @@ const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 export const login = async (password: string): Promise<boolean> => {
     if (USE_MOCK) {
         // Simulate network latency typical of a server handshake
-        await delay(1200); 
+        // Increased delay to allow the "hacker log" animation to play out
+        await delay(2500); 
         return password === MOCK_PASSWORD;
     }
 
