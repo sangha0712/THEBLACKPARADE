@@ -28,15 +28,15 @@ const TransitionScreen: React.FC<TransitionScreenProps> = ({ onComplete }) => {
             }
         }, 30);
 
-        // Show "ACCESS COMPLETED" after 2.5s
+        // Show "ACCESS COMPLETED" after 5s (User request)
         const timer1 = setTimeout(() => {
             setShowTitle(true);
-        }, 2500);
+        }, 5000);
 
-        // Complete after 4s
+        // Complete after 7s (5s wait + 2s display time)
         const timer2 = setTimeout(() => {
             onComplete();
-        }, 4000);
+        }, 7000);
 
         return () => {
             clearInterval(interval);

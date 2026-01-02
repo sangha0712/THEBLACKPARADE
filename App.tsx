@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import LoginForm from './components/LoginForm';
 import CharacterList from './components/CharacterList';
 import DeathScreen from './components/DeathScreen';
@@ -20,24 +20,24 @@ const App: React.FC = () => {
         return () => clearInterval(timer);
     }, []);
 
-    const handleLoginSuccess = () => {
+    const handleLoginSuccess = useCallback(() => {
         // Start fade out animation for login form
         setFadeOutLogin(true);
         // Start full screen transition immediately
         setShowTransition(true);
-    };
+    }, []);
     
-    const handleTransitionComplete = () => {
+    const handleTransitionComplete = useCallback(() => {
         setShowTransition(false);
         setAppState(AppState.CHARACTERS);
-    };
+    }, []);
 
-    const handleLogout = () => {
+    const handleLogout = useCallback(() => {
         setFadeOutLogin(false);
         setAppState(AppState.LOGIN);
-    };
+    }, []);
 
-    const handleLoginFail = (newAttemptCount: number) => {
+    const handleLoginFail = useCallback((newAttemptCount: number) => {
         setFailCount(newAttemptCount);
         
         if (newAttemptCount >= MAX_ATTEMPTS) {
@@ -52,7 +52,7 @@ const App: React.FC = () => {
                 document.title = "DISCONNECTED";
             }, 1500);
         }
-    };
+    }, []);
 
     return (
         <div className="min-h-screen w-full bg-[#111] flex items-center justify-center p-0 md:p-8 font-sans">
