@@ -255,11 +255,11 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess, onLoginFail, curr
     // Render Logic based on State
     if (anomalyState === 'LOGS') {
         return (
-            <div className="relative w-full h-full bg-black border-none p-8 flex flex-col animate-pulse">
-                <h1 className="text-4xl text-red-600 font-bold mb-4 tracking-[0.2em] border-b-2 border-red-800 pb-2">
+            <div className="relative w-full h-full bg-black border-none p-4 md:p-8 flex flex-col animate-pulse">
+                <h1 className="text-2xl md:text-4xl text-red-600 font-bold mb-4 tracking-[0.2em] border-b-2 border-red-800 pb-2">
                     SYSTEM BREACH IN PROGRESS
                 </h1>
-                <div className="flex-1 overflow-hidden font-mono text-xl text-red-500 bg-red-950/20 p-4 border border-red-900/50">
+                <div className="flex-1 overflow-hidden font-mono text-lg md:text-xl text-red-500 bg-red-950/20 p-2 md:p-4 border border-red-900/50">
                     {horrorLogs.map((log, i) => (
                         <div key={i} className="mb-1 drop-shadow-[2px_2px_0_rgba(0,0,0,1)]">
                             {log}
@@ -274,32 +274,32 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess, onLoginFail, curr
     if (anomalyState === 'LIST') {
         return (
             <div className="relative w-full h-full bg-[#050000] flex flex-col">
-                <div className="p-6 border-b border-red-800 bg-red-950/30 flex justify-between items-center shrink-0">
-                    <h2 className="text-2xl md:text-3xl text-red-600 font-bold tracking-widest drop-shadow-[0_0_10px_rgba(255,0,0,0.8)]">
-                        [RESTRICTED] INCIDENT ARCHIVE
+                <div className="p-4 md:p-6 border-b border-red-800 bg-red-950/30 flex justify-between items-center shrink-0">
+                    <h2 className="text-xl md:text-3xl text-red-600 font-bold tracking-widest drop-shadow-[0_0_10px_rgba(255,0,0,0.8)] truncate">
+                        [RESTRICTED] ARCHIVE
                     </h2>
                     <button 
                         onClick={() => setAnomalyState('NONE')}
-                        className="text-red-400 border border-red-800 px-4 py-2 hover:bg-red-900 hover:text-white transition-colors text-sm"
+                        className="text-red-400 border border-red-800 px-3 py-1 md:px-4 md:py-2 hover:bg-red-900 hover:text-white transition-colors text-xs md:text-sm whitespace-nowrap"
                     >
-                        CLOSE ARCHIVE
+                        CLOSE
                     </button>
                 </div>
                 
-                <div className="flex-1 overflow-y-auto p-8 custom-scrollbar space-y-8">
+                <div className="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar space-y-8">
                     <div className="text-red-800/50 text-center mb-8 font-mono text-sm animate-pulse">
                         SCROLL TO VIEW RECORDED ANOMALIES // EYES ONLY
                     </div>
                     {INCIDENT_REPORTS.map((report, idx) => (
-                        <div key={idx} className="border border-red-900/50 bg-[#0a0000] p-6 hover:border-red-600 transition-colors group">
+                        <div key={idx} className="border border-red-900/50 bg-[#0a0000] p-4 md:p-6 hover:border-red-600 transition-colors group">
                             <div className="flex justify-between items-start mb-4 border-b border-red-900/30 pb-2">
-                                <div>
+                                <div className="flex flex-col md:block">
                                     <span className="text-red-600 font-bold text-lg mr-4">{report.id}</span>
-                                    <span className="text-gray-400 text-sm tracking-widest">LOCATION: {report.location}</span>
+                                    <span className="text-gray-400 text-xs md:text-sm tracking-widest block md:inline mt-1 md:mt-0">LOC: {report.location}</span>
                                 </div>
-                                <span className="bg-red-900 text-black px-2 py-1 text-xs font-bold">{report.status}</span>
+                                <span className="bg-red-900 text-black px-2 py-1 text-xs font-bold whitespace-nowrap ml-2">{report.status}</span>
                             </div>
-                            <h3 className="text-2xl text-red-500 font-bold mb-3 group-hover:text-red-400">{report.title}</h3>
+                            <h3 className="text-xl md:text-2xl text-red-500 font-bold mb-3 group-hover:text-red-400">{report.title}</h3>
                             <p className="text-gray-400 leading-relaxed font-mono text-sm border-l-2 border-red-900 pl-4">
                                 {report.description}
                             </p>
@@ -314,25 +314,25 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess, onLoginFail, curr
     }
 
     return (
-        <div className={`relative z-10 w-[90%] max-w-[800px] bg-[#0a0a0a] border border-[#333] p-16 text-center shadow-[0_0_20px_rgba(0,0,0,0.8)] transition-transform duration-100 ${isShaking ? 'animate-shake' : ''}`}>
+        <div className={`relative z-10 w-full md:w-[90%] max-w-[800px] bg-[#0a0a0a] border-none md:border md:border-[#333] p-6 md:p-16 text-center md:shadow-[0_0_20px_rgba(0,0,0,0.8)] transition-transform duration-100 ${isShaking ? 'animate-shake' : ''}`}>
             {anomalyState === 'WARNING' && (
-                <div className="absolute inset-0 bg-black/95 flex flex-col items-center justify-center p-8 z-50 border-2 border-red-600 animate-[fadeIn_0.2s_ease-out]">
-                    <div className="text-red-600 text-6xl mb-6 animate-pulse">⚠️</div>
-                    <div className="text-red-500 font-bold text-lg mb-8 leading-relaxed tracking-wider">
+                <div className="absolute inset-0 bg-black/95 flex flex-col items-center justify-center p-4 md:p-8 z-50 border-2 border-red-600 animate-[fadeIn_0.2s_ease-out]">
+                    <div className="text-red-600 text-5xl md:text-6xl mb-4 md:mb-6 animate-pulse">⚠️</div>
+                    <div className="text-red-500 font-bold text-base md:text-lg mb-6 md:mb-8 leading-relaxed tracking-wider break-keep">
                         해당 접근은 사망,결손,중상 등<br/>
                         귀하의 신변에 위협이 될 수 있습니다.<br/><br/>
                         정말로 접근하시겠습니까?
                     </div>
-                    <div className="flex gap-6">
+                    <div className="flex gap-4 md:gap-6 flex-col md:flex-row w-full md:w-auto">
                         <button
                             onClick={() => setAnomalyState('INPUT')}
-                            className="border border-red-600 text-red-600 px-8 py-3 hover:bg-red-600 hover:text-black transition-all duration-300 font-bold tracking-widest text-lg shadow-[0_0_10px_rgba(255,0,0,0.2)]"
+                            className="border border-red-600 text-red-600 px-6 py-3 md:px-8 hover:bg-red-600 hover:text-black transition-all duration-300 font-bold tracking-widest text-lg shadow-[0_0_10px_rgba(255,0,0,0.2)]"
                         >
                             접근
                         </button>
                         <button
                             onClick={() => setAnomalyState('NONE')}
-                            className="border border-gray-600 text-gray-500 px-8 py-3 hover:bg-gray-800 hover:text-white transition-all duration-300 font-bold tracking-widest text-lg"
+                            className="border border-gray-600 text-gray-500 px-6 py-3 md:px-8 hover:bg-gray-800 hover:text-white transition-all duration-300 font-bold tracking-widest text-lg"
                         >
                             취소
                         </button>
@@ -341,9 +341,9 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess, onLoginFail, curr
             )}
 
             {anomalyState === 'INPUT' && (
-                <div className="absolute inset-0 bg-black/95 flex flex-col items-center justify-center p-8 z-50 border-2 border-red-900 animate-[fadeIn_0.2s_ease-out]">
-                    <h2 className="text-red-600 text-3xl font-bold mb-8 tracking-[0.3em] drop-shadow-[0_0_10px_rgba(255,0,0,0.8)]">
-                        SECURITY CLEARANCE REQUIRED
+                <div className="absolute inset-0 bg-black/95 flex flex-col items-center justify-center p-4 md:p-8 z-50 border-2 border-red-900 animate-[fadeIn_0.2s_ease-out]">
+                    <h2 className="text-red-600 text-2xl md:text-3xl font-bold mb-6 md:mb-8 tracking-[0.2em] drop-shadow-[0_0_10px_rgba(255,0,0,0.8)]">
+                        SECURITY CLEARANCE
                     </h2>
                     <input 
                         type="password" 
@@ -352,14 +352,14 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess, onLoginFail, curr
                         onKeyDown={(e) => {
                             if (e.key === 'Enter') handleAnomalyAttempt();
                         }}
-                        placeholder="ENTER ACCESS CODE"
-                        className="w-[80%] max-w-[500px] bg-[#1a0000] border border-red-800 text-red-500 p-4 text-2xl font-mono outline-none mb-8 text-center transition-all duration-300 focus:border-red-500 focus:shadow-[0_0_20px_rgba(255,0,0,0.3)] placeholder-red-900/50 tracking-widest"
+                        placeholder="ACCESS CODE"
+                        className="w-[90%] md:w-[80%] max-w-[500px] bg-[#1a0000] border border-red-800 text-red-500 p-3 md:p-4 text-xl md:text-2xl font-mono outline-none mb-6 md:mb-8 text-center transition-all duration-300 focus:border-red-500 focus:shadow-[0_0_20px_rgba(255,0,0,0.3)] placeholder-red-900/50 tracking-widest"
                         autoFocus
                     />
-                    <div className="flex gap-6">
+                    <div className="flex gap-4 md:gap-6 flex-col md:flex-row w-full md:w-auto">
                         <button
                             onClick={handleAnomalyAttempt}
-                            className="border border-red-600 bg-red-950/20 text-red-500 px-10 py-3 hover:bg-red-600 hover:text-black transition-all duration-300 font-bold tracking-widest text-lg shadow-[0_0_15px_rgba(255,0,0,0.1)]"
+                            className="border border-red-600 bg-red-950/20 text-red-500 px-8 py-3 md:px-10 hover:bg-red-600 hover:text-black transition-all duration-300 font-bold tracking-widest text-lg shadow-[0_0_15px_rgba(255,0,0,0.1)]"
                         >
                             VERIFY
                         </button>
@@ -369,24 +369,24 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess, onLoginFail, curr
                                 setAnomalyPassword('');
                                 setAnomalyError(null);
                             }}
-                            className="border border-gray-800 text-gray-600 px-10 py-3 hover:bg-gray-900 hover:text-gray-400 transition-all duration-300 font-bold tracking-widest text-lg"
+                            className="border border-gray-800 text-gray-600 px-8 py-3 md:px-10 hover:bg-gray-900 hover:text-gray-400 transition-all duration-300 font-bold tracking-widest text-lg"
                         >
                             ABORT
                         </button>
                     </div>
                     {anomalyError && (
-                        <div className="mt-8 text-red-500 font-bold tracking-widest animate-pulse border-t border-red-900 pt-2">
+                        <div className="mt-6 md:mt-8 text-red-500 font-bold tracking-widest animate-pulse border-t border-red-900 pt-2 text-sm md:text-base">
                             {anomalyError}
                         </div>
                     )}
                 </div>
             )}
 
-            <h1 className="text-6xl md:text-7xl text-white mb-6 tracking-[8px] drop-shadow-[2px_2px_0_rgba(255,0,0,1)] font-bold">
+            <h1 className="text-4xl md:text-7xl text-white mb-4 md:mb-6 tracking-[4px] md:tracking-[8px] drop-shadow-[2px_2px_0_rgba(255,0,0,1)] font-bold">
                 BLACK PARADE
             </h1>
             
-            <div className="text-base text-[#555] mb-10 py-4 border-y border-dashed border-[#333] leading-relaxed tracking-wider">
+            <div className="text-xs md:text-base text-[#555] mb-6 md:mb-10 py-3 md:py-4 border-y border-dashed border-[#333] leading-relaxed tracking-wider">
                 SYSTEM: SECURE // SERVER: NESTJS-CORE-V9<br/>
                 STATUS: {isLoading ? <span className="text-[#00ff00] animate-pulse">INTRUSION IN PROGRESS...</span> : 'WAITING FOR INPUT...'}
                 {currentAttempts > 0 && !isLoading && (
@@ -398,9 +398,9 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess, onLoginFail, curr
 
             {isLoading ? (
                 // Hacker Log View
-                <div className="w-full bg-black border border-[#00ff00] p-6 mb-8 text-left h-[200px] overflow-hidden flex flex-col justify-end shadow-[inset_0_0_10px_rgba(0,255,0,0.2)]">
+                <div className="w-full bg-black border border-[#00ff00] p-4 md:p-6 mb-6 md:mb-8 text-left h-[150px] md:h-[200px] overflow-hidden flex flex-col justify-end shadow-[inset_0_0_10px_rgba(0,255,0,0.2)]">
                     {logs.map((log, i) => (
-                        <div key={i} className="text-[#00ff00] font-mono text-lg leading-tight opacity-90 truncate">
+                        <div key={i} className="text-[#00ff00] font-mono text-sm md:text-lg leading-tight opacity-90 truncate">
                             {log}
                         </div>
                     ))}
@@ -417,22 +417,22 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess, onLoginFail, curr
                             if (e.key === 'Enter') handleAttempt();
                         }}
                         placeholder="PASSWORD"
-                        className={`w-[80%] bg-[#111] border border-[#444] text-red-500 p-6 text-3xl font-mono outline-none mb-8 text-center transition-all duration-300 focus:border-red-500 focus:shadow-[0_0_10px_rgba(255,0,0,0.5)] placeholder-gray-700`}
+                        className={`w-full md:w-[80%] bg-[#111] border border-[#444] text-red-500 p-4 md:p-6 text-2xl md:text-3xl font-mono outline-none mb-6 md:mb-8 text-center transition-all duration-300 focus:border-red-500 focus:shadow-[0_0_10px_rgba(255,0,0,0.5)] placeholder-gray-700 rounded-none`}
                     />
                     
                     <br />
                     
                     <button 
                         onClick={handleAttempt}
-                        className={`bg-[#222] text-white border border-white py-4 px-12 text-xl tracking-widest transition-all duration-300 hover:bg-red-500 hover:text-black hover:font-bold hover:border-red-500 cursor-pointer`}
+                        className={`w-full md:w-auto bg-[#222] text-white border border-white py-3 px-8 md:py-4 md:px-12 text-lg md:text-xl tracking-widest transition-all duration-300 hover:bg-red-500 hover:text-black hover:font-bold hover:border-red-500 cursor-pointer`}
                     >
                         접속
                     </button>
                     
-                    <div className="mt-8">
+                    <div className="mt-6 md:mt-8">
                         <button
                             onClick={() => setAnomalyState('WARNING')}
-                            className="bg-[#222] text-white border border-white py-4 px-12 text-xl tracking-widest transition-all duration-300 hover:bg-red-500 hover:text-black hover:font-bold hover:border-red-500 cursor-pointer"
+                            className="w-full md:w-auto bg-[#222] text-white border border-white py-3 px-8 md:py-4 md:px-12 text-lg md:text-xl tracking-widest transition-all duration-300 hover:bg-red-500 hover:text-black hover:font-bold hover:border-red-500 cursor-pointer"
                         >
                             [ 이상현상 ]
                         </button>
@@ -440,7 +440,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess, onLoginFail, curr
                 </>
             )}
 
-            <div className={`mt-8 min-h-[40px] text-lg font-bold ${message?.type === 'success' ? 'text-[#00ff00]' : message?.type === 'neutral' ? 'text-yellow-500' : 'text-[#ff0000]'}`}>
+            <div className={`mt-6 md:mt-8 min-h-[40px] text-base md:text-lg font-bold ${message?.type === 'success' ? 'text-[#00ff00]' : message?.type === 'neutral' ? 'text-yellow-500' : 'text-[#ff0000]'}`}>
                 {message?.text && !isLoading && (
                     <span dangerouslySetInnerHTML={{ __html: message.text.replace(/\n/g, '<br/>') }}></span>
                 )}

@@ -55,24 +55,24 @@ const App: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen w-full bg-[#111] flex items-center justify-center p-4 md:p-8 font-sans">
-            {/* Tablet Frame */}
-            <div className="relative w-full max-w-[1200px] h-[85vh] md:h-[90vh] bg-[#222] rounded-[40px] p-[12px] md:p-[20px] shadow-[0_20px_50px_rgba(0,0,0,0.8),inset_0_0_10px_rgba(255,255,255,0.05)] border border-[#333]">
+        <div className="min-h-screen w-full bg-[#111] flex items-center justify-center p-0 md:p-8 font-sans">
+            {/* Tablet Frame (Desktop) / Full Screen (Mobile) */}
+            <div className="relative w-full md:max-w-[1200px] h-[100dvh] md:h-[90vh] bg-black md:bg-[#222] md:rounded-[40px] p-0 md:p-[20px] md:shadow-[0_20px_50px_rgba(0,0,0,0.8),inset_0_0_10px_rgba(255,255,255,0.05)] md:border border-[#333]">
                 
-                {/* Physical Buttons (Decoration) */}
-                <div className="absolute -right-[2px] top-32 w-[3px] h-12 bg-[#333] rounded-r shadow-lg"></div>
-                <div className="absolute -right-[2px] top-48 w-[3px] h-20 bg-[#333] rounded-r shadow-lg"></div>
+                {/* Physical Buttons (Decoration - Desktop Only) */}
+                <div className="hidden md:block absolute -right-[2px] top-32 w-[3px] h-12 bg-[#333] rounded-r shadow-lg"></div>
+                <div className="hidden md:block absolute -right-[2px] top-48 w-[3px] h-20 bg-[#333] rounded-r shadow-lg"></div>
 
                 {/* Inner Screen Container */}
-                <div className="relative w-full h-full bg-black rounded-[25px] overflow-hidden ring-4 ring-black shadow-inner flex flex-col">
+                <div className="relative w-full h-full bg-black md:rounded-[25px] overflow-hidden md:ring-4 ring-black shadow-inner flex flex-col">
                     
                     {/* Tablet Status Bar */}
-                    <div className="h-8 bg-black/90 backdrop-blur-md z-50 flex justify-between items-center px-6 text-[10px] md:text-xs text-gray-500 font-mono select-none border-b border-[#222] shrink-0">
-                        <div className="flex gap-4">
+                    <div className="h-8 bg-black/90 backdrop-blur-md z-50 flex justify-between items-center px-4 md:px-6 text-[10px] md:text-xs text-gray-500 font-mono select-none border-b border-[#222] shrink-0">
+                        <div className="flex gap-2 md:gap-4">
                             <span className="text-emerald-700">● SECURE NET</span>
-                            <span>VPN: <span className="text-gray-300">ENCRYPTED</span></span>
+                            <span className="hidden sm:inline">VPN: <span className="text-gray-300">ENCRYPTED</span></span>
                         </div>
-                        <div className="flex gap-4 items-center">
+                        <div className="flex gap-3 md:gap-4 items-center">
                              <span>{currentTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
                              <span>BAT: 98%</span>
                              <div className="w-4 h-2 border border-gray-600 rounded-sm relative">
