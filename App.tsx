@@ -25,6 +25,11 @@ const App: React.FC = () => {
         setAppState(AppState.CHARACTERS);
     };
 
+    const handleLogout = () => {
+        setFadeOutLogin(false);
+        setAppState(AppState.LOGIN);
+    };
+
     const handleLoginFail = (newAttemptCount: number) => {
         setFailCount(newAttemptCount);
         
@@ -63,7 +68,7 @@ const App: React.FC = () => {
             )}
 
             {appState === AppState.CHARACTERS && (
-                <CharacterList />
+                <CharacterList onBack={handleLogout} />
             )}
 
             {appState === AppState.DEATH && (

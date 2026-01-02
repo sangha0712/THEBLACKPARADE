@@ -11,17 +11,20 @@ const MOCK_CHARACTERS: Character[] = [
     {
         id: '1',
         name: 'UNIT-704',
-        description: '"명령을 대기 중입니다. 마스터."'
+        description: '"명령을 대기 중입니다. 마스터."',
+        image: 'https://robohash.org/UNIT-704?set=set1&bgset=bg2&size=400x400'
     },
     {
         id: '2',
         name: '닥터 K',
-        description: '"실험체는 준비되었나? 시간이 없어."'
+        description: '"실험체는 준비되었나? 시간이 없어."',
+        image: 'https://robohash.org/DR-K?set=set2&bgset=bg2&size=400x400'
     },
     {
         id: '3',
         name: 'Unknown_X',
-        description: '데이터 손상됨... 접근 불가 구역의 존재.'
+        description: '데이터 손상됨... 접근 불가 구역의 존재.',
+        image: 'https://robohash.org/UNKNOWN?set=set3&bgset=bg2&size=400x400'
     }
 ];
 
