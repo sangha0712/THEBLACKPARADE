@@ -19,7 +19,7 @@ const CharacterList: React.FC = () => {
         return (
             <div className="relative z-10 w-[90%] max-w-[500px] p-10 text-center">
                 <div className="text-red-500 text-xl font-mono tracking-widest animate-pulse">
-                    &gt; DECRYPTING ARCHIVES...
+                    {'>'} DECRYPTING ARCHIVES...
                     <br/>
                     <span className="text-xs text-gray-500 mt-2 block">FETCHING FROM /api/characters</span>
                 </div>
