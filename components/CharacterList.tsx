@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Character } from '../types';
 import { getCharacters } from '../api';
 
@@ -6,19 +6,198 @@ interface CharacterListProps {
     onBack: () => void;
 }
 
+// New Status Type
+type CharacterStatus = 'ALIVE' | 'DELETED' | 'MISSING';
+
 interface CharacterCardProps {
     char: Character;
     isSpecial: boolean;
+    status: CharacterStatus;
     onClick: () => void;
 }
 
-// Extracted CharacterCard to prevent re-creation on parent renders and ensure state stability
-const CharacterCard: React.FC<CharacterCardProps> = ({ char, isSpecial, onClick }) => {
+// STORAGE KEY (Updated for new data structure)
+const STATUS_STORAGE_KEY = 'BLACK_PARADE_CHARACTER_STATUS_V2';
+
+// Visual Component for Deleted State (Noise + Staircase)
+const DeletedVisuals = () => (
+    <>
+        {/* Staircase/Banding Effect */}
+        <div className="absolute inset-0 z-20 pointer-events-none bg-[repeating-linear-gradient(to_bottom,transparent_0,transparent_4px,rgba(0,0,0,0.8)_4px,rgba(0,0,0,0.8)_8px)] mix-blend-hard-light"></div>
+        {/* Noise Effect (using global noise-bg class) */}
+        <div className="absolute inset-0 z-10 pointer-events-none opacity-50 mix-blend-overlay">
+            <div className="noise-bg"></div>
+        </div>
+        {/* Desaturation/Darkening Overlay */}
+        <div className="absolute inset-0 z-10 bg-black/40 pointer-events-none mix-blend-multiply"></div>
+    </>
+);
+
+// --- HEARTBEAT MONITOR COMPONENT ---
+const HeartbeatMonitor: React.FC<{ status: CharacterStatus }> = ({ status }) => {
+    const canvasRef = useRef<HTMLCanvasElement>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const canvas = canvasRef.current;
+        const container = containerRef.current;
+        if (!canvas || !container) return;
+
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+
+        let animationFrameId: number;
+        let x = 0;
+        let lastY = 50; // Center (height/2)
+        const speed = 2;
+        
+        // Setup logic to run after layout
+        const init = () => {
+            canvas.width = container.clientWidth;
+            canvas.height = 100; // Fixed height
+            
+            // Clear initially
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw Grid (Static Background) - We will redraw grid lines in the loop slightly differently
+            // or just let the black overwrite them. For simplicity in this style, we verify scan logic.
+        };
+
+        // Resize handling
+        const resizeObserver = new ResizeObserver(() => {
+             window.requestAnimationFrame(() => {
+                if (canvas && container) {
+                    init();
+                    x = 0; // Reset position on resize
+                }
+            });
+        });
+        resizeObserver.observe(container);
+
+        // EKG Pattern Logic
+        // Sequence of Y offsets from center
+        const normalPattern = [0, 0, 0, -5, 5, -20, 40, -10, 0, 0, 0, 0, 0, 0, 0];
+        let patternIndex = 0;
+        let frameCount = 0;
+
+        const render = () => {
+            if (!canvas || !ctx) return;
+
+            // 1. "Eraser Bar" - Erase a small portion ahead of the current x
+            // This prevents the "Flicker" of clearing the whole screen
+            ctx.fillStyle = '#000000';
+            const eraseWidth = 10;
+            ctx.fillRect(x, 0, eraseWidth + speed, canvas.height);
+
+            // 2. Draw Grid Lines (Only in the erased section to maintain background)
+            ctx.strokeStyle = 'rgba(0, 50, 0, 0.3)';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            // Vertical grid line check
+            if (x % 20 < speed) { 
+                ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); 
+            }
+            // Horizontal grid lines are tricky with partial erase, 
+            // so we re-draw horizontal lines in the erased chunk
+            for (let i = 0; i < canvas.height; i += 20) {
+                ctx.moveTo(x, i); ctx.lineTo(x + eraseWidth, i);
+            }
+            ctx.stroke();
+
+            // 3. Draw Heartbeat Line
+            ctx.strokeStyle = status === 'DELETED' ? '#ff0000' : (status === 'MISSING' ? '#ffff00' : '#00ff00');
+            ctx.lineWidth = 2;
+            ctx.shadowBlur = status === 'DELETED' ? 2 : 5;
+            ctx.shadowColor = ctx.strokeStyle;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            
+            ctx.beginPath();
+            ctx.moveTo(x, lastY);
+
+            // Calculate Next Point
+            let nextY = 50; // Center default
+
+            if (status === 'DELETED') {
+                // Flatline - Fixed center
+                nextY = 50;
+            } else {
+                // Alive or Missing (EKG Pattern)
+                if (frameCount % 3 === 0) { // Update Y every few frames
+                     const p = normalPattern[patternIndex % normalPattern.length];
+                     nextY = 50 + p;
+                     patternIndex++;
+                } else {
+                    nextY = lastY; // Hold position
+                }
+            }
+            
+            x += speed; // Move forward
+            
+            // Loop screen logic
+            if (x > canvas.width) {
+                x = 0;
+                ctx.moveTo(0, nextY); // Move path start to beginning without drawing
+                // Do NOT clearRect here. The "Eraser Bar" at the top of loop handles the clearing.
+            }
+
+            ctx.lineTo(x, nextY);
+            ctx.stroke();
+
+            lastY = nextY;
+            frameCount++;
+            animationFrameId = requestAnimationFrame(render);
+        };
+
+        // Start animation
+        init();
+        render();
+
+        return () => {
+            cancelAnimationFrame(animationFrameId);
+            resizeObserver.disconnect();
+        };
+    }, [status]);
+
+    return (
+        <div ref={containerRef} className="w-full bg-black border border-[#333] mt-2 relative h-[100px] overflow-hidden">
+            <div className="absolute top-1 left-2 text-[10px] font-mono tracking-widest z-10 flex gap-2">
+                <span className={`${status === 'DELETED' ? 'text-red-500' : (status === 'MISSING' ? 'text-yellow-500' : 'text-green-500')}`}>
+                    BPM: {status === 'DELETED' ? '0' : (status === 'MISSING' ? 'ERR' : '72')}
+                </span>
+                <span className="text-gray-600">ECG_LEAD_II</span>
+            </div>
+            <canvas ref={canvasRef} className="block" />
+        </div>
+    );
+};
+
+// Extracted CharacterCard
+const CharacterCard: React.FC<CharacterCardProps> = ({ char, isSpecial, status, onClick }) => {
     const [isHovered, setIsHovered] = useState(false);
+
+    // Badge styling based on status
+    const getBadgeStyle = () => {
+        switch (status) {
+            case 'DELETED': return 'bg-red-600 text-black';
+            case 'MISSING': return 'bg-yellow-500 text-black'; // DISAPPEARED
+            case 'ALIVE': return 'bg-[#00ff00] text-black';
+            default: return 'bg-[#00ff00] text-black';
+        }
+    };
+
+    const getBadgeText = () => {
+        switch (status) {
+            case 'DELETED': return 'DELETED';
+            case 'MISSING': return 'DISAPPEARED';
+            case 'ALIVE': return 'ALIVE';
+        }
+    };
 
     return (
         <div 
-            className="relative cursor-pointer h-full pt-2 pb-2" // Stable hit area with padding
+            className="relative cursor-pointer h-full pt-2 pb-2" 
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
             onClick={onClick}
@@ -32,10 +211,10 @@ const CharacterCard: React.FC<CharacterCardProps> = ({ char, isSpecial, onClick 
                     : `bg-[#0f0f0f] border ${isHovered ? 'border-red-500 shadow-[0_10px_20px_rgba(255,0,0,0.3)]' : 'border-[#333]'}`
                 }`}
             >
-                {/* Special Priority Badge */}
+                {/* Status Badge (Replacing Priority) */}
                 {isSpecial && (
-                    <div className="absolute top-2 right-2 z-30 bg-red-600 text-black text-[10px] font-black px-2 py-0.5 tracking-widest animate-pulse pointer-events-none">
-                        PRIORITY
+                    <div className={`absolute top-2 right-2 z-30 text-[10px] font-black px-2 py-0.5 tracking-widest animate-pulse pointer-events-none ${getBadgeStyle()}`}>
+                        {getBadgeText()}
                     </div>
                 )}
 
@@ -53,7 +232,7 @@ const CharacterCard: React.FC<CharacterCardProps> = ({ char, isSpecial, onClick 
                             src={char.image} 
                             alt={char.name} 
                             className={`w-full h-full object-cover transition-all duration-500 
-                            ${isHovered ? 'opacity-100 scale-110 grayscale-0' : 'opacity-80 scale-100 grayscale'}`}
+                            ${status === 'DELETED' ? 'grayscale contrast-125 brightness-50' : (isHovered ? 'opacity-100 scale-110 grayscale-0' : 'opacity-80 scale-100 grayscale')}`}
                         />
                     ) : (
                         <div className={`w-full h-full flex items-center justify-center font-mono text-4xl tracking-widest
@@ -61,13 +240,17 @@ const CharacterCard: React.FC<CharacterCardProps> = ({ char, isSpecial, onClick 
                             SEC-{char.id}
                         </div>
                     )}
+
+                    {/* DELETED VISUAL EFFECTS */}
+                    {status === 'DELETED' && <DeletedVisuals />}
+
                     {/* Tech overlay lines */}
                     <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] z-20 pointer-events-none bg-[length:100%_2px,3px_100%]"></div>
                 </div>
 
                 {/* Text Content */}
                 <div className="p-4 text-center w-full relative flex-1 flex flex-col justify-center">
-                     {/* Decorative corners - color transition */}
+                     {/* Decorative corners */}
                      <div className={`absolute top-0 left-0 w-2 h-2 border-t border-l transition-colors duration-300 ${isHovered ? 'border-red-500' : 'border-[#555]'}`}></div>
                      <div className={`absolute top-0 right-0 w-2 h-2 border-t border-r transition-colors duration-300 ${isHovered ? 'border-red-500' : 'border-[#555]'}`}></div>
                      <div className={`absolute bottom-0 left-0 w-2 h-2 border-b border-l transition-colors duration-300 ${isHovered ? 'border-red-500' : 'border-[#555]'}`}></div>
@@ -77,7 +260,7 @@ const CharacterCard: React.FC<CharacterCardProps> = ({ char, isSpecial, onClick 
                         ${isSpecial 
                             ? (isHovered ? 'text-red-400' : 'text-red-500') 
                             : (isHovered ? 'text-red-500' : 'text-white')
-                        }`}>
+                        } ${status === 'DELETED' ? 'line-through decoration-red-600 decoration-2 opacity-50' : ''}`}>
                         {char.name}
                     </div>
                     <div className={`h-[1px] w-12 mx-auto mb-3 transition-colors duration-300
@@ -86,7 +269,7 @@ const CharacterCard: React.FC<CharacterCardProps> = ({ char, isSpecial, onClick 
                             : (isHovered ? 'bg-red-500' : 'bg-gray-700')
                         }`}></div>
                     <div className="text-xs text-[#888] italic leading-relaxed px-2 line-clamp-3">
-                        {char.description}
+                        {status === 'DELETED' ? 'FILE CORRUPTED // DELETED' : (status === 'MISSING' ? 'LOCATION UNKNOWN // MISSING' : char.description)}
                     </div>
                 </div>
             </div>
@@ -95,7 +278,12 @@ const CharacterCard: React.FC<CharacterCardProps> = ({ char, isSpecial, onClick 
 };
 
 // Detail View Component
-const CharacterDetail: React.FC<{ char: Character; onClose: () => void }> = ({ char, onClose }) => {
+const CharacterDetail: React.FC<{ 
+    char: Character; 
+    status: CharacterStatus; 
+    onChangeStatus: (s: CharacterStatus) => void; 
+    onClose: () => void 
+}> = ({ char, status, onChangeStatus, onClose }) => {
     return (
         <div className="w-full h-full bg-[#0a0a0a] flex flex-col animate-[fadeIn_0.3s_ease-out]">
             {/* Header */}
@@ -126,19 +314,28 @@ const CharacterDetail: React.FC<{ char: Character; onClose: () => void }> = ({ c
                             
                             <div className="relative overflow-hidden aspect-[3/4]">
                                 {char.image ? (
-                                    <img src={char.image} alt={char.name} className="w-full h-full object-cover contrast-110 transition-all duration-500" />
+                                    <img 
+                                        src={char.image} 
+                                        alt={char.name} 
+                                        className={`w-full h-full object-cover transition-all duration-500 ${status === 'DELETED' ? 'grayscale contrast-125 brightness-50' : 'contrast-110'}`} 
+                                    />
                                 ) : (
                                     <div className="w-full h-full flex items-center justify-center bg-[#050505] text-[#333] font-mono text-6xl">
                                         ?
                                     </div>
                                 )}
                                 <div className="absolute inset-0 ring-1 ring-inset ring-red-900/30 pointer-events-none"></div>
+                                
+                                {/* DELETED VISUAL EFFECTS */}
+                                {status === 'DELETED' && <DeletedVisuals />}
                             </div>
                             
                             {/* Stats decoration */}
                             <div className="mt-2 flex justify-between text-[10px] font-mono text-gray-600">
-                                <span>SYNC_RATE: 98.4%</span>
-                                <span>STATUS: ACTIVE</span>
+                                <span>SYNC_RATE: {status === 'DELETED' ? '0.0%' : (status === 'MISSING' ? '12.4%' : '98.4%')}</span>
+                                <span className={status === 'DELETED' ? 'text-red-700 font-bold' : (status === 'MISSING' ? 'text-yellow-600 font-bold' : '')}>
+                                    STATUS: {status === 'DELETED' ? 'TERMINATED' : (status === 'MISSING' ? 'UNKNOWN' : 'ACTIVE')}
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -175,9 +372,45 @@ const CharacterDetail: React.FC<{ char: Character; onClose: () => void }> = ({ c
                                 </div>
                             </div>
 
-                            <button className="w-full border border-red-900/50 bg-[#1a0505] text-red-700 py-3 font-mono font-bold tracking-[0.3em] hover:bg-red-600 hover:text-black hover:border-red-600 transition-all duration-300 shadow-[0_0_15px_rgba(255,0,0,0.1)]">
-                                DELETED
-                            </button>
+                            {/* Status Control Panel (3 Buttons) */}
+                            <div className="w-full grid grid-cols-3 gap-0 border border-[#333] mt-2">
+                                {/* Button 1: MISSING (실종) - Yellow */}
+                                <button
+                                    onClick={() => onChangeStatus('MISSING')}
+                                    className={`py-3 font-mono font-bold tracking-wider text-sm md:text-base transition-all duration-300 border-r border-[#333] relative group overflow-hidden
+                                        ${status === 'MISSING' 
+                                            ? 'bg-yellow-900/30 text-yellow-500 shadow-[inset_0_0_20px_rgba(255,200,0,0.2)] border-b-2 border-yellow-500' 
+                                            : 'bg-[#0a0a0a] text-gray-600 hover:text-yellow-500 hover:bg-[#111]'}`}
+                                >
+                                    실종
+                                </button>
+                                
+                                {/* Button 2: DELETED - Red */}
+                                <button
+                                    onClick={() => onChangeStatus('DELETED')}
+                                    className={`py-3 font-mono font-bold tracking-wider text-sm md:text-base transition-all duration-300 border-r border-[#333] relative group overflow-hidden
+                                        ${status === 'DELETED' 
+                                            ? 'bg-red-900/30 text-red-600 shadow-[inset_0_0_20px_rgba(255,0,0,0.2)] border-b-2 border-red-600' 
+                                            : 'bg-[#0a0a0a] text-gray-600 hover:text-red-500 hover:bg-[#111]'}`}
+                                >
+                                    DELETED
+                                </button>
+                                
+                                {/* Button 3: ALIVE - Green */}
+                                <button
+                                    onClick={() => onChangeStatus('ALIVE')}
+                                    className={`py-3 font-mono font-bold tracking-wider text-sm md:text-base transition-all duration-300 relative group overflow-hidden
+                                        ${status === 'ALIVE' 
+                                            ? 'bg-green-900/30 text-[#00ff00] shadow-[inset_0_0_20px_rgba(0,255,0,0.2)] border-b-2 border-[#00ff00]' 
+                                            : 'bg-[#0a0a0a] text-gray-600 hover:text-[#00ff00] hover:bg-[#111]'}`}
+                                >
+                                    ALIVE
+                                </button>
+                            </div>
+                            
+                            {/* Heartbeat Monitor Graph */}
+                            <HeartbeatMonitor status={status} />
+
                         </div>
 
                          <div className="mt-auto pt-8">
@@ -204,6 +437,9 @@ const CharacterList: React.FC<CharacterListProps> = ({ onBack }) => {
     const [characters, setCharacters] = useState<Character[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null);
+    
+    // Store status as a map: ID -> Status
+    const [charStatuses, setCharStatuses] = useState<Record<string, CharacterStatus>>({});
 
     useEffect(() => {
         const fetchData = async () => {
@@ -212,7 +448,32 @@ const CharacterList: React.FC<CharacterListProps> = ({ onBack }) => {
             setLoading(false);
         };
         fetchData();
+
+        // Load status from localStorage
+        try {
+            const stored = localStorage.getItem(STATUS_STORAGE_KEY);
+            if (stored) {
+                setCharStatuses(JSON.parse(stored));
+            } else {
+                // Fallback: check for old key version and migrate if necessary
+                const oldDeleted = localStorage.getItem('BLACK_PARADE_DELETED_RECORDS');
+                if (oldDeleted) {
+                    const deletedList: string[] = JSON.parse(oldDeleted);
+                    const newStatusMap: Record<string, CharacterStatus> = {};
+                    deletedList.forEach(id => { newStatusMap[id] = 'DELETED'; });
+                    setCharStatuses(newStatusMap);
+                }
+            }
+        } catch (e) {
+            console.error("Failed to load status records", e);
+        }
     }, []);
+
+    const handleStatusChange = (id: string, newStatus: CharacterStatus) => {
+        const updated = { ...charStatuses, [id]: newStatus };
+        setCharStatuses(updated);
+        localStorage.setItem(STATUS_STORAGE_KEY, JSON.stringify(updated));
+    };
 
     // Filter characters into Special (1,2,3) and Regular groups
     const specialIds = ['1', '2', '3'];
@@ -232,7 +493,15 @@ const CharacterList: React.FC<CharacterListProps> = ({ onBack }) => {
     }
 
     if (selectedCharacter) {
-        return <CharacterDetail char={selectedCharacter} onClose={() => setSelectedCharacter(null)} />;
+        const currentStatus = charStatuses[selectedCharacter.id] || 'ALIVE';
+        return (
+            <CharacterDetail 
+                char={selectedCharacter} 
+                status={currentStatus}
+                onChangeStatus={(s) => handleStatusChange(selectedCharacter.id, s)}
+                onClose={() => setSelectedCharacter(null)} 
+            />
+        );
     }
 
     return (
@@ -269,6 +538,7 @@ const CharacterList: React.FC<CharacterListProps> = ({ onBack }) => {
                                     key={char.id} 
                                     char={char} 
                                     isSpecial={true} 
+                                    status={charStatuses[char.id] || 'ALIVE'}
                                     onClick={() => setSelectedCharacter(char)}
                                 />
                             ))}
@@ -290,6 +560,7 @@ const CharacterList: React.FC<CharacterListProps> = ({ onBack }) => {
                                 key={char.id} 
                                 char={char} 
                                 isSpecial={false} 
+                                status={charStatuses[char.id] || 'ALIVE'}
                                 onClick={() => setSelectedCharacter(char)}
                              />
                         ))}
