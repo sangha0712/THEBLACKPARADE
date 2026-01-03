@@ -28,8 +28,8 @@ const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 export const login = async (password: string): Promise<boolean> => {
     if (USE_MOCK) {
         // Simulate network latency typical of a server handshake
-        // Increased delay to allow the "hacker log" animation to play out
-        await delay(2500); 
+        // Reduced delay to 800ms to ensure audio playback is still considered part of the user gesture
+        await delay(800); 
         
         // Allow case-insensitive and space-insensitive password matching
         // e.g., "happy or death", "HAPPY OR DEATH", "happyordeath" -> "HAPPYORDEATH"

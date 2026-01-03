@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { login } from '../api';
+import { playErrorSound } from '../utils/sound';
 
 interface LoginFormProps {
     onLoginSuccess: () => void;
@@ -87,6 +88,15 @@ type AnomalyState = 'NONE' | 'WARNING' | 'INPUT' | 'LOGS' | 'LIST';
 type TerminationStage = 'NONE' | 'BLACKOUT' | 'TURN_AROUND' | 'DO_NOT_TURN_AROUND' | 'FINAL_BLACKOUT';
 type NotificationStage = 'NONE' | 'SHOW' | 'CORRUPT' | 'SHUTDOWN';
 
+const TUTORIAL_TEXTS = [
+    "환영합니다.",
+    "해당 프로그램은 인도자분들께 기본 제공되는 프로그램입니다.",
+    "지급받으신 비밀번호를 입력하시고 접속버튼을 눌러 변이체,사망자를 확인하세요.",
+    "이상 현상 접근은 일부 인도자를 제외하고는 접근이 허용되지 않습니다.",
+    "귀하가 정신 강화 계열 및 회복 관련 계열 각성자가 아니라면 접근을 금합니다.",
+    "인도자가 되신 것을 환영합니다. 행운을 빕니다."
+];
+
 const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess, onLoginFail, currentAttempts, maxAttempts }) => {
     const [password, setPassword] = useState('');
     const [anomalyPassword, setAnomalyPassword] = useState(''); // Separate state for anomaly password
@@ -106,6 +116,10 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess, onLoginFail, curr
     // Termination Sequence State
     const [anomalyFailCount, setAnomalyFailCount] = useState(0);
     const [terminationStage, setTerminationStage] = useState<TerminationStage>('NONE');
+    
+    // Tutorial State
+    const [showTutorial, setShowTutorial] = useState(true);
+    const [tutorialStep, setTutorialStep] = useState(0);
     
     // Standard logs state
     const [logs, setLogs] = useState<string[]>([]);
@@ -220,6 +234,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess, onLoginFail, curr
                 setMessage({ text: "IDENTITY VERIFIED. ACCESS GRANTED.", type: 'success' });
                 onLoginSuccess();
             } else {
+                playErrorSound();
                 const newCount = currentAttempts + 1;
                 setIsShaking(true);
                 setPassword('');
@@ -277,6 +292,14 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess, onLoginFail, curr
             clearInterval(interval);
             setAnomalyState('LIST');
         }, 8500); 
+    };
+
+    const handleTutorialClick = () => {
+        if (tutorialStep < TUTORIAL_TEXTS.length - 1) {
+            setTutorialStep(prev => prev + 1);
+        } else {
+            setShowTutorial(false);
+        }
     };
 
     // 0. Forced Shutdown State (Black Screen)
@@ -405,6 +428,35 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess, onLoginFail, curr
 
     return (
         <div className={`relative z-10 w-full h-full bg-[#0a0a0a] border-none p-6 md:p-16 flex flex-col justify-center items-center text-center transition-transform duration-100 ${isShaking ? 'animate-shake' : ''}`}>
+            {/* Tutorial Overlay */}
+            {showTutorial && (
+                <>
+                    {/* Background Dimmer - behind zoomed elements (z-200) */}
+                    <div className="fixed inset-0 bg-black/80 z-[200] transition-opacity duration-500" />
+                    
+                    {/* Content Overlay - in front of everything (z-300) */}
+                    <div 
+                        onClick={handleTutorialClick}
+                        className="fixed inset-0 z-[300] flex flex-col items-center justify-center p-4 md:p-8 cursor-pointer"
+                    >
+                        <div className={`
+                            bg-[#111] border border-green-500/50 p-6 md:p-10 w-full text-center relative shadow-[0_0_30px_rgba(0,255,0,0.1)] rounded-sm transition-all duration-700 ease-in-out
+                            ${tutorialStep === 2 
+                                ? 'max-w-sm md:translate-x-[320px] translate-y-[180px] md:translate-y-0' 
+                                : 'max-w-2xl translate-x-0 translate-y-0'
+                            }
+                        `}>
+                            <p key={tutorialStep} className="text-green-500 font-mono text-lg md:text-2xl leading-relaxed animate-[fadeIn_0.5s_ease-in-out]">
+                               {TUTORIAL_TEXTS[tutorialStep]}
+                            </p>
+                            <div className="mt-8 text-xs text-gray-500 animate-pulse tracking-widest">
+                                [ CLICK TO CONTINUE ]
+                            </div>
+                        </div>
+                    </div>
+                </>
+            )}
+
             {anomalyState === 'WARNING' && (
                 <div className="absolute inset-0 bg-black/95 flex flex-col items-center justify-center p-4 md:p-8 z-50 border-2 border-red-600 animate-[fadeIn_0.2s_ease-out]">
                     <div className="text-red-600 text-5xl md:text-6xl mb-4 md:mb-6 animate-pulse">⚠️</div>
@@ -500,7 +552,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess, onLoginFail, curr
                 </div>
             ) : (
                 // Normal Input View
-                <>
+                <div className={`w-full flex flex-col items-center transition-all duration-700 ease-in-out ${showTutorial && tutorialStep === 2 ? 'scale-110 md:scale-125 z-[201] relative pointer-events-none' : ''}`}>
                     <input 
                         type="password" 
                         value={password}
@@ -512,8 +564,6 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess, onLoginFail, curr
                         className={`w-full md:w-[80%] bg-[#111] border border-[#444] text-red-500 p-4 md:p-6 text-2xl md:text-3xl font-mono outline-none mb-6 md:mb-8 text-center transition-all duration-300 focus:border-red-500 focus:shadow-[0_0_10px_rgba(255,0,0,0.5)] placeholder-gray-700 rounded-none`}
                     />
                     
-                    <br />
-                    
                     <button 
                         onClick={handleAttempt}
                         className={`w-full md:w-auto bg-[#222] text-white border border-white py-3 px-8 md:py-4 md:px-12 text-lg md:text-xl tracking-widest transition-all duration-300 hover:bg-red-500 hover:text-black hover:font-bold hover:border-red-500 cursor-pointer`}
@@ -521,15 +571,15 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess, onLoginFail, curr
                         접속
                     </button>
                     
-                    <div className="mt-6 md:mt-8">
+                    <div className="mt-6 md:mt-8 pointer-events-auto">
                         <button
-                            onClick={() => setAnomalyState('WARNING')}
+                            onClick={() => !showTutorial && setAnomalyState('WARNING')}
                             className="w-full md:w-auto bg-[#222] text-white border border-white py-3 px-8 md:py-4 md:px-12 text-lg md:text-xl tracking-widest transition-all duration-300 hover:bg-red-500 hover:text-black hover:font-bold hover:border-red-500 cursor-pointer"
                         >
                             [ 이상현상 ]
                         </button>
                     </div>
-                </>
+                </div>
             )}
 
             <div className={`mt-6 md:mt-8 min-h-[40px] text-base md:text-lg font-bold ${message?.type === 'success' ? 'text-[#00ff00]' : message?.type === 'neutral' ? 'text-yellow-500' : 'text-[#ff0000]'}`}>

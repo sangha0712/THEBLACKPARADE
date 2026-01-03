@@ -1,16 +1,27 @@
 // Web Audio API Utilities for Cyberpunk Sound Effects
 
-// Helper to get AudioContext
+// Singleton AudioContext to prevent running out of hardware contexts (limit is usually 6)
+let audioCtx: AudioContext | null = null;
+
 const getAudioContext = () => {
-    const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
-    if (!AudioContext) return null;
-    return new AudioContext();
+    if (!audioCtx) {
+        const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+        if (AudioContext) {
+            audioCtx = new AudioContext();
+        }
+    }
+    return audioCtx;
 };
 
 // Internal fallback: Synth sound for error
 const playSynthError = () => {
     const ctx = getAudioContext();
     if (!ctx) return;
+
+    // Ensure context is running (it might be suspended by default)
+    if (ctx.state === 'suspended') {
+        ctx.resume();
+    }
 
     // Create oscillator for the "beep"
     const osc = ctx.createOscillator();
@@ -36,20 +47,28 @@ const playSynthError = () => {
 };
 
 export const playErrorSound = () => {
-    // Try to play the uploaded file '경고음 3.mp3'
-    const audio = new Audio('/경고음 3.mp3');
+    // Safely encode the path to handle spaces and Korean characters
+    // Browsers sometimes fail to parse unencoded Unicode/spaces in Audio constructor
+    const safePath = encodeURI('/경고음 3.mp3');
+    const audio = new Audio(safePath);
     audio.volume = 0.5;
 
-    audio.play().catch((e) => {
-        // Fallback to synth if file not found or playback failed
-        console.warn("Failed to play 경고음 3.mp3, using synth fallback:", e);
-        playSynthError();
-    });
+    const playPromise = audio.play();
+
+    if (playPromise !== undefined) {
+        playPromise.catch((e) => {
+            // Fallback to synth if file not found or playback failed (e.g., due to autoplay policy)
+            console.warn("Failed to play MP3, using synth fallback. Error:", e);
+            playSynthError();
+        });
+    }
 };
 
 export const playSirenSound = () => {
     const ctx = getAudioContext();
     if (!ctx) return;
+
+    if (ctx.state === 'suspended') ctx.resume();
 
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
@@ -82,6 +101,8 @@ export const playSirenSound = () => {
 export const playDeathNoise = () => {
     const ctx = getAudioContext();
     if (!ctx) return;
+
+    if (ctx.state === 'suspended') ctx.resume();
 
     // Create 2 seconds of white noise
     const bufferSize = ctx.sampleRate * 2.0;
