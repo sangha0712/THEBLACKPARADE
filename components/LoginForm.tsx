@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { login } from '../api';
-import { playErrorSound } from '../utils/sound';
+import { playErrorSound, playAccessDeniedBeep, initAudio } from '../utils/sound';
 
 interface LoginFormProps {
     onLoginSuccess: () => void;
@@ -222,6 +222,11 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess, onLoginFail, curr
     }, [isLoading, anomalyState]);
 
     const handleAttempt = async () => {
+        // [Autoplay Policy Fix]
+        // Must init AudioContext immediately within the user event handler.
+        // If we wait until after login() resolves (2.5s later), the browser will block the sound.
+        await initAudio();
+        
         if (!password || isLoading) return;
         setIsLoading(true);
         setMessage(null); 
@@ -252,7 +257,10 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess, onLoginFail, curr
         }
     };
 
-    const handleAnomalyAttempt = () => {
+    const handleAnomalyAttempt = async () => {
+        // [Autoplay Policy Fix] Initialize audio immediately on user interaction
+        await initAudio();
+        
         const normalizedInput = anomalyPassword.replace(/\s+/g, '').toUpperCase();
         if (normalizedInput === 'DONOTTURNAROUND') {
             startAnomalySequence();
@@ -264,6 +272,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess, onLoginFail, curr
             if (newCount >= 5) {
                 setTerminationStage('BLACKOUT');
             } else {
+                playAccessDeniedBeep();
                 setAnomalyError('ACCESS DENIED. INCORRECT SECURITY CODE.');
                 setIsShaking(true);
                 setAnomalyPassword('');
