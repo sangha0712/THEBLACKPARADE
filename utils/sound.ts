@@ -41,7 +41,8 @@ export const playErrorSound = () => {
     audio.volume = 1.0; 
     
     // 2. Handle errors (File not found, autoplay blocked, format issues)
-    audio.play().catch((err) => {
+    // Removed unused 'err' parameter to fix TS6133 build error
+    audio.play().catch(() => {
         // Fallback: Original Industrial Buzz Logic
         const ctx = getAudioContext();
         if (!ctx) return;
