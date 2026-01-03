@@ -165,13 +165,19 @@ const CharacterDetail: React.FC<{ char: Character; onClose: () => void }> = ({ c
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="bg-[#111] border border-[#333] p-4">
                                     <div className="text-sm md:text-base text-[#666] mb-1 font-bold">AFFILIATION</div>
-                                    <div className="text-gray-200 text-lg md:text-xl font-bold">BLACK PARADE</div>
+                                    <div className="text-gray-200 text-lg md:text-xl font-bold">
+                                        {['1', '2', '3'].includes(char.id) ? 'ZERO HOUR' : 'BLACK PARADE'}
+                                    </div>
                                 </div>
                                 <div className="bg-[#111] border border-[#333] p-4">
                                     <div className="text-sm md:text-base text-[#666] mb-1 font-bold">CLEARANCE</div>
                                     <div className="text-red-400 text-lg md:text-xl font-bold">LEVEL {['1','2','3'].includes(char.id) ? '5 (MAX)' : '3'}</div>
                                 </div>
                             </div>
+
+                            <button className="w-full border border-red-900/50 bg-[#1a0505] text-red-700 py-3 font-mono font-bold tracking-[0.3em] hover:bg-red-600 hover:text-black hover:border-red-600 transition-all duration-300 shadow-[0_0_15px_rgba(255,0,0,0.1)]">
+                                DELETED
+                            </button>
                         </div>
 
                          <div className="mt-auto pt-8">

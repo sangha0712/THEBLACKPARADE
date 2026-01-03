@@ -59,7 +59,7 @@ const INCIDENT_REPORTS = [
         title: "심야 클럽 '네온' 연쇄 절단",
         location: "서울 지하 벙커 구역",
         status: "미해결",
-        description: "금요일 밤, 클럽 내 120명의 인원이 30초 내에 신체 부위가 절단되어 사망. CCTV 확인 결과, 번쩍이는 섬광 외에 용의자 식별 불가. 현장의 혈액량이 인간 120명의 총량을 초과함(약 3배). 벽면에 혈액으로 그려진 알 수 없는 문양 발견."
+        description: "금요일 밤, 클럽 내 120명의 인원이 30초 내에 신체 부위가 절단됨. CCTV 확인 결과, 번쩍이는 섬광 외에 용의자 식별 불가. 현장의 혈액량이 인간 120명의 총량을 초과함(약 3배). 벽면에 혈액으로 그려진 알 수 없는 문양 발견."
     },
     {
         id: "CASE-666-RD",
@@ -118,7 +118,12 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess, onLoginFail, curr
     const [terminationStage, setTerminationStage] = useState<TerminationStage>('NONE');
     
     // Tutorial State
-    const [showTutorial, setShowTutorial] = useState(true);
+    // Check localStorage to determine if tutorial should be shown
+    const [showTutorial, setShowTutorial] = useState(() => {
+        // If data exists ('true'), we hide tutorial (return false). 
+        // If data does not exist (null), we show tutorial (return true).
+        return !localStorage.getItem('TUTORIAL_SEEN');
+    });
     const [tutorialStep, setTutorialStep] = useState(0);
     
     // Standard logs state
@@ -308,6 +313,8 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess, onLoginFail, curr
             setTutorialStep(prev => prev + 1);
         } else {
             setShowTutorial(false);
+            // Save to localStorage so tutorial doesn't show again
+            localStorage.setItem('TUTORIAL_SEEN', 'true');
         }
     };
 
