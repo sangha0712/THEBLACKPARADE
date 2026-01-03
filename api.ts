@@ -9,12 +9,46 @@ const API_BASE = '/api';
 const MOCK_PASSWORD = "HAPPYORDEATH";
 
 // Updated mock characters: Generated 24 items to demonstrate scrolling
-const MOCK_CHARACTERS: Character[] = Array.from({ length: 24 }, (_, i) => ({
-    id: (i + 1).toString(),
-    name: `NAME ${i + 1}`,
-    description: 'UNKNOWN',
-    image: ''
-}));
+const MOCK_CHARACTERS: Character[] = Array.from({ length: 24 }, (_, i) => {
+    const id = (i + 1).toString();
+    
+    // ID 1 Custom Data
+    if (id === '1') {
+        return {
+            id: '1',
+            name: '상중하',
+            description: '능력: 신속 | 클래스: A',
+            image: 'https://igx.kr/r/2C/0/0'
+        };
+    }
+
+    // ID 2 Custom Data
+    if (id === '2') {
+        return {
+            id: '2',
+            name: '비네트',
+            description: '능력:영력 흡수/클래스:S',
+            image: 'https://igx.kr/r/2C/1/0'
+        };
+    }
+
+    // ID 3 Custom Data
+    if (id === '3') {
+        return {
+            id: '3',
+            name: '챠린',
+            description: '능력:X/클래스 S',
+            image: 'https://igx.kr/r/2C/2/0'
+        };
+    }
+
+    return {
+        id: id,
+        name: `NAME ${i + 1}`,
+        description: 'UNKNOWN',
+        image: ''
+    };
+});
 
 // --- UTILS ---
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
