@@ -314,7 +314,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess, onLoginFail, curr
     }
 
     return (
-        <div className={`relative z-10 w-full md:w-[90%] max-w-[800px] bg-[#0a0a0a] border-none md:border md:border-[#333] p-6 md:p-16 text-center md:shadow-[0_0_20px_rgba(0,0,0,0.8)] transition-transform duration-100 ${isShaking ? 'animate-shake' : ''}`}>
+        <div className={`relative z-10 w-full h-full bg-[#0a0a0a] border-none p-6 md:p-16 flex flex-col justify-center items-center text-center transition-transform duration-100 ${isShaking ? 'animate-shake' : ''}`}>
             {anomalyState === 'WARNING' && (
                 <div className="absolute inset-0 bg-black/95 flex flex-col items-center justify-center p-4 md:p-8 z-50 border-2 border-red-600 animate-[fadeIn_0.2s_ease-out]">
                     <div className="text-red-600 text-5xl md:text-6xl mb-4 md:mb-6 animate-pulse">⚠️</div>
@@ -382,7 +382,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess, onLoginFail, curr
                 </div>
             )}
 
-            <h1 className="text-4xl md:text-7xl text-white mb-4 md:mb-6 tracking-[4px] md:tracking-[8px] drop-shadow-[2px_2px_0_rgba(255,0,0,1)] font-bold">
+            <h1 className="text-4xl md:text-7xl text-white mb-4 md:mb-6 tracking-[4px] md:tracking-[8px] drop-shadow-[2px_2px_0_rgba(0,255,0,1)] font-bold">
                 BLACK PARADE
             </h1>
             
