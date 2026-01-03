@@ -85,6 +85,7 @@ const INCIDENT_REPORTS = [
 
 type AnomalyState = 'NONE' | 'WARNING' | 'INPUT' | 'LOGS' | 'LIST';
 type TerminationStage = 'NONE' | 'BLACKOUT' | 'TURN_AROUND' | 'DO_NOT_TURN_AROUND' | 'FINAL_BLACKOUT';
+type NotificationStage = 'NONE' | 'SHOW' | 'CORRUPT' | 'SHUTDOWN';
 
 const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess, onLoginFail, currentAttempts, maxAttempts }) => {
     const [password, setPassword] = useState('');
@@ -97,6 +98,10 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess, onLoginFail, curr
     // Anomaly State Management
     const [anomalyState, setAnomalyState] = useState<AnomalyState>('NONE');
     const [horrorLogs, setHorrorLogs] = useState<string[]>([]);
+    
+    // Watcher Effect State (triggered after time in list)
+    const [watcherTriggered, setWatcherTriggered] = useState(false);
+    const [notificationStage, setNotificationStage] = useState<NotificationStage>('NONE');
 
     // Termination Sequence State
     const [anomalyFailCount, setAnomalyFailCount] = useState(0);
@@ -120,6 +125,53 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess, onLoginFail, curr
         if (logsEndRef.current) logsEndRef.current.scrollIntoView({ behavior: 'smooth' });
         if (horrorLogsEndRef.current) horrorLogsEndRef.current.scrollIntoView({ behavior: 'auto' });
     }, [logs, horrorLogs]);
+
+    // Watcher Effect & Shutdown Sequence (starts at 90s)
+    useEffect(() => {
+        let watcherTimer: ReturnType<typeof setTimeout>;
+        let notifTimer: ReturnType<typeof setTimeout>;
+        let corruptTimer: ReturnType<typeof setTimeout>;
+        let shutdownTimer: ReturnType<typeof setTimeout>;
+
+        if (anomalyState === 'LIST') {
+            setWatcherTriggered(false); // Reset on entry
+            setNotificationStage('NONE');
+
+            // 1. Trigger Watcher at 90s (90000ms)
+            watcherTimer = setTimeout(() => {
+                setWatcherTriggered(true);
+                
+                // 2. Trigger Notification 3s after Watcher
+                notifTimer = setTimeout(() => {
+                    setNotificationStage('SHOW');
+
+                    // 3. Corrupt text 0.5s after Notification
+                    corruptTimer = setTimeout(() => {
+                        setNotificationStage('CORRUPT');
+                    }, 500);
+
+                    // 4. Shutdown 2s after Notification
+                    shutdownTimer = setTimeout(() => {
+                        setNotificationStage('SHUTDOWN');
+                        // Attempt to close the window, though browsers may block it
+                        try { window.close(); } catch(e) {}
+                    }, 2000);
+
+                }, 3000);
+
+            }, 90000); 
+        } else {
+            setWatcherTriggered(false);
+            setNotificationStage('NONE');
+        }
+
+        return () => {
+            clearTimeout(watcherTimer);
+            clearTimeout(notifTimer);
+            clearTimeout(corruptTimer);
+            clearTimeout(shutdownTimer);
+        };
+    }, [anomalyState]);
 
     // Termination sequence timer
     useEffect(() => {
@@ -227,6 +279,11 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess, onLoginFail, curr
         }, 8500); 
     };
 
+    // 0. Forced Shutdown State (Black Screen)
+    if (notificationStage === 'SHUTDOWN') {
+        return <div className="fixed inset-0 bg-black z-[99999] cursor-none" />;
+    }
+
     // 1. Check Termination Stage first (Highest priority override)
     if (terminationStage !== 'NONE') {
         return (
@@ -273,7 +330,40 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess, onLoginFail, curr
 
     if (anomalyState === 'LIST') {
         return (
-            <div className="relative w-full h-full bg-[#050000] flex flex-col">
+            <div className={`relative w-full h-full bg-[#050000] flex flex-col ${watcherTriggered ? 'animate-glitch' : ''}`}>
+                {/* Watcher Effect Overlay */}
+                {watcherTriggered && (
+                    <div className="absolute inset-0 z-[100] bg-black/90 flex items-center justify-center flex-col overflow-hidden animate-[pulse_0.1s_ease-in-out_infinite]">
+                        <div className="absolute inset-0 noise-bg opacity-50 mix-blend-overlay"></div>
+                        <div className="text-red-600 font-mono font-black text-5xl md:text-8xl text-center tracking-tighter animate-glitch drop-shadow-[0_0_30px_rgba(255,0,0,0.8)] leading-none">
+                            SOMEONE IS<br/>WATCHING YOU
+                        </div>
+                        <div className="mt-8 text-red-800 font-mono animate-pulse tracking-widest text-xl">
+                            CONNECTION UNSTABLE...
+                        </div>
+                    </div>
+                )}
+
+                {/* System Notification Overlay */}
+                {(notificationStage === 'SHOW' || notificationStage === 'CORRUPT') && (
+                    <div className="absolute inset-0 z-[200] flex items-center justify-center p-6 animate-[fadeIn_0.2s_ease-out]">
+                        <div className="bg-[#f0f0f0] text-black w-full max-w-[320px] rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.8)] overflow-hidden font-sans border border-gray-300 transform scale-100">
+                             <div className="p-5 text-center">
+                                <h3 className="text-lg font-bold mb-2">시스템 경고</h3>
+                                <p className="text-sm text-gray-800 mb-4 leading-relaxed">
+                                    디바이스의 온도가 높아 사용 중인 앱을 강제종료 합니다.
+                                </p>
+                                <p className={`text-xs transition-all duration-100 ${notificationStage === 'CORRUPT' ? 'text-red-600 font-bold scale-105' : 'text-gray-500'}`}>
+                                    {notificationStage === 'SHOW' ? '저장되지 않은 데이터는 자동으로 저장됩니다.' : '저장되지 않은 데이터는 삭제됩니다.'}
+                                </p>
+                             </div>
+                             <div className="border-t border-gray-300 p-3 text-center text-blue-600 font-bold text-base cursor-not-allowed bg-gray-50">
+                                확인
+                             </div>
+                        </div>
+                    </div>
+                )}
+
                 <div className="p-4 md:p-6 border-b border-red-800 bg-red-950/30 flex justify-between items-center shrink-0">
                     <h2 className="text-xl md:text-3xl text-red-600 font-bold tracking-widest drop-shadow-[0_0_10px_rgba(255,0,0,0.8)] truncate">
                         [RESTRICTED] ARCHIVE
@@ -322,6 +412,8 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess, onLoginFail, curr
                         해당 접근은 사망,결손,중상 등<br/>
                         귀하의 신변에 위협이 될 수 있습니다.<br/><br/>
                         정말로 접근하시겠습니까?
+                        <br/><br/>
+                        <span className="text-red-700 text-sm opacity-80">[해당 페이지는 보안 시스템에 의해 보호받지 못합니다.]</span>
                     </div>
                     <div className="flex gap-4 md:gap-6 flex-col md:flex-row w-full md:w-auto">
                         <button
