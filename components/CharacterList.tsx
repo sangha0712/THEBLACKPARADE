@@ -102,7 +102,7 @@ const CharacterDetail: React.FC<{ char: Character; onClose: () => void }> = ({ c
             <div className="shrink-0 p-6 border-b border-[#333] flex justify-between items-center sticky top-0 bg-[#0a0a0a] z-20">
                 <div className="flex flex-col">
                      <h2 className="text-white text-xl md:text-2xl tracking-[0.2em] truncate flex items-center gap-3">
-                        <span className="text-red-600 font-bold">>></span>
+                        <span className="text-red-600 font-bold">{">>"}</span>
                         {char.name}
                     </h2>
                      <span className="text-[10px] text-gray-500 tracking-widest font-mono">ID: {char.id.padStart(4, '0')} // SECURE_FILE</span>
