@@ -45,6 +45,9 @@ const HORROR_LOGS = [
     "CONNECTION LOST... WITH GOD"
 ];
 
+// Evidence Type Definition
+type EvidenceType = 'MAP' | 'PHOTO_SITE' | 'PHOTO_DAMAGE' | 'PHOTO_CURRENT' | 'CORRUPT';
+
 // Incident Reports Data
 const INCIDENT_REPORTS = [
     {
@@ -54,7 +57,13 @@ const INCIDENT_REPORTS = [
         origin: "지하 400m 암반층 균열",
         damage: "제7 기갑사단 전원(400명) 사망, MBT 45대 완파",
         status: "접근 금지",
-        description: "작전 개시 14분 만에 7기갑사단과의 통신이 두절됨. 드론 정찰 결과 생존자는 단 한 명도 발견되지 않음.\n\n[현장 분석]\nMBT-K2 전차 45대의 상부 장갑이 내부에서 외부 방향으로 뜯겨나간 흔적이 발견됨. 이는 전차 내부에서 폭발이나 물리적 타격이 있었음을 시사하나, 폭약 반응은 전무함. 사망한 승무원들의 신체는 외상이 없었으나, 부검 결과 뇌의 편도체가 극심한 공포로 인해 물리적으로 파열되어 있었음.\n\n[회수된 블랙박스]\n교전 직전 오디오 트랙에서 4Hz 미만의 초저주파 진동음 검출. 해당 소리는 하늘이 아닌 지하 4km 지점에서 발생하여 암반을 타고 올라온 것으로 추정됨. 유일한 목격자(통신병)는 구조 직후 자신의 혀를 절단하여 진술을 거부함."
+        description: "작전 개시 14분 만에 7기갑사단과의 통신이 두절됨. 드론 정찰 결과 생존자는 단 한 명도 발견되지 않음.\n\n[현장 분석]\nMBT-K2 전차 45대의 상부 장갑이 내부에서 외부 방향으로 뜯겨나간 흔적이 발견됨. 이는 전차 내부에서 폭발이나 물리적 타격이 있었음을 시사하나, 폭약 반응은 전무함. 사망한 승무원들의 신체는 외상이 없었으나, 부검 결과 뇌의 편도체가 극심한 공포로 인해 물리적으로 파열되어 있었음.\n\n[회수된 블랙박스]\n교전 직전 오디오 트랙에서 4Hz 미만의 초저주파 진동음 검출. 해당 소리는 하늘이 아닌 지하 4km 지점에서 발생하여 암반을 타고 올라온 것으로 추정됨. 유일한 목격자(통신병)는 구조 직후 자신의 혀를 절단하여 진술을 거부함.",
+        evidence: {
+            mapCode: "SEC-09-MTN",
+            siteStatus: "ENCRYPTED",
+            damageStatus: "VISUAL_CONFIRMED",
+            currentStatus: "NO_SIGNAL"
+        }
     },
     {
         id: "CASE-114-VB",
@@ -63,7 +72,13 @@ const INCIDENT_REPORTS = [
         origin: "클럽 내 VIP 룸 대형 거울",
         damage: "민간인 120명 사망, 현장 출동 경관 2명 정신 오염",
         status: "미해결",
-        description: "금요일 밤 23:42, 클럽 내부의 모든 조명이 붉게 변한 직후 사건 발생. 120명의 인원이 30초 내에 신체 부위가 절단되어 사망함.\n\n[피해 상세]\n절단면은 섭씨 3000도 이상의 고열로 지진 듯 매끄러웠으며 출혈이 거의 발생하지 않음. 피해자들은 춤을 추거나 술을 마시는 자세 그대로 신체가 분리됨.\n\n[CCTV 분석]\n사건 발생 10분 전부터 VIP룸의 거울이 현실과 다른 장면(비명을 지르는 군중)을 비추고 있었음이 포착됨. 거울 속의 존재들이 거울 밖으로 손을 뻗는 순간 영상이 노이즈로 뒤덮임. 현장 벽면에 혈액으로 그려진 나선형 문양은 고대 수메르어와 유사하나 해독 불가."
+        description: "금요일 밤 23:42, 클럽 내부의 모든 조명이 붉게 변한 직후 사건 발생. 120명의 인원이 30초 내에 신체 부위가 절단되어 사망함.\n\n[피해 상세]\n절단면은 섭씨 3000도 이상의 고열로 지진 듯 매끄러웠으며 출혈이 거의 발생하지 않음. 피해자들은 춤을 추거나 술을 마시는 자세 그대로 신체가 분리됨.\n\n[CCTV 분석]\n사건 발생 10분 전부터 VIP룸의 거울이 현실과 다른 장면(비명을 지르는 군중)을 비추고 있었음이 포착됨. 거울 속의 존재들이 거울 밖으로 손을 뻗는 순간 영상이 노이즈로 뒤덮임. 현장 벽면에 혈액으로 그려진 나선형 문양은 고대 수메르어와 유사하나 해독 불가.",
+        evidence: {
+            mapCode: "SEC-BKR-NEON",
+            siteStatus: "CORRUPTED",
+            damageStatus: "R_RATED_FILTER",
+            currentStatus: "STATIC_FEED"
+        }
     },
     {
         id: "CASE-666-RD",
@@ -72,7 +87,13 @@ const INCIDENT_REPORTS = [
         origin: "심해 3,000m 해곡",
         damage: "연구 시설 완전 소멸, 연구원 54명 실종(사망 추정)",
         status: "데이터 말소",
-        description: "해상 연구소와의 정기 통신 두절 48시간 후 정찰팀 투입.\n\n[내부 상황]\n시설 내부는 침수되지 않았으나, 모든 표면이 검은 타르 같은 점액질로 덮여 있었음. 연구원들의 시신은 발견되지 않았으나, 벽과 바닥에 남겨진 인간 형태의 그림자가 독자적으로 움직이는 현상 목격.\n\n[Dr. Hans의 음성 기록]\n'그림자가 빛을 먹어치우고 있어. 조명을 켜면 안 돼. 빛이 생기면 그림자도 생긴다. 내 그림자가... 내 목을 조르고 있다고!'\n\n현재 해당 시설은 오염 확산을 막기 위해 전술핵 타격 후 수장 처리됨."
+        description: "해상 연구소와의 정기 통신 두절 48시간 후 정찰팀 투입.\n\n[내부 상황]\n시설 내부는 침수되지 않았으나, 모든 표면이 검은 타르 같은 점액질로 덮여 있었음. 연구원들의 시신은 발견되지 않았으나, 벽과 바닥에 남겨진 인간 형태의 그림자가 독자적으로 움직이는 현상 목격.\n\n[Dr. Hans의 음성 기록]\n'그림자가 빛을 먹어치우고 있어. 조명을 켜면 안 돼. 빛이 생기면 그림자도 생긴다. 내 그림자가... 내 목을 조르고 있다고!'\n\n현재 해당 시설은 오염 확산을 막기 위해 전술핵 타격 후 수장 처리됨.",
+        evidence: {
+            mapCode: "PACIFIC-DELTA",
+            siteStatus: "DARKNESS",
+            damageStatus: "MISSING_DATA",
+            currentStatus: "DESTROYED"
+        }
     },
     {
         id: "CASE-000-NULL",
@@ -81,7 +102,13 @@ const INCIDENT_REPORTS = [
         origin: "불명 (대기 중 미확인 포자 확산 추정)",
         damage: "주민 1,204명 전원 사망",
         status: "봉쇄됨",
-        description: "외부와 완전히 격리된 아파트 단지에서 주민 전원이 아사(餓死)한 채 발견됨. 냉장고에는 음식이 가득 차 있었음.\n\n[부검 리포트]\n사망자 전원의 위장은 쌀, 생고기, 가구 파편, 심지어 플라스틱 등 섭취 가능한 모든 물질로 가득 차 있었으나, 혈중 영양소 수치는 0에 수렴함. 위장 내벽에서 미확인 검은 곰팡이 군락 발견. 이 곰팡이는 숙주가 섭취한 모든 영양분을 0.1초 내에 분해하여 가스로 배출함.\n\n[특이사항]\n현장 조사관 2명이 진입 1시간 만에 '무언가가 내 배를 안에서부터 갉아먹는다'며 착란 증세를 보인 후 자해 사망. 현재 반경 5km 내 접근 금지."
+        description: "외부와 완전히 격리된 아파트 단지에서 주민 전원이 아사(餓死)한 채 발견됨. 냉장고에는 음식이 가득 차 있었음.\n\n[부검 리포트]\n사망자 전원의 위장은 쌀, 생고기, 가구 파편, 심지어 플라스틱 등 섭취 가능한 모든 물질로 가득 차 있었으나, 혈중 영양소 수치는 0에 수렴함. 위장 내벽에서 미확인 검은 곰팡이 군락 발견. 이 곰팡이는 숙주가 섭취한 모든 영양분을 0.1초 내에 분해하여 가스로 배출함.\n\n[특이사항]\n현장 조사관 2명이 진입 1시간 만에 '무언가가 내 배를 안에서부터 갉아먹는다'며 착란 증세를 보인 후 자해 사망. 현재 반경 5km 내 접근 금지.",
+        evidence: {
+            mapCode: "SEC-D-APT",
+            siteStatus: "BIOHAZARD",
+            damageStatus: "AUTOPSY_FILE",
+            currentStatus: "QUARANTINED"
+        }
     },
     {
         id: "CASE-888-EYE",
@@ -90,7 +117,13 @@ const INCIDENT_REPORTS = [
         origin: "터널 벽면 미세 균열",
         damage: "작업자 4명 실종, 구조대원 2명 영구적 시력 상실",
         status: "조사 중",
-        description: "심야 선로 보수 작업 중 발생.\n\n[현상 기록]\n작업자들은 터널 벽면의 콘크리트 균열이 사람의 '눈꺼풀'처럼 벌어지며, 그 안에서 수천 개의 붉은 안광이 자신들을 응시했다고 보고함. 해당 시선에 10초 이상 노출된 2명은 즉시 망막 신경이 타버려 영구적으로 실명됨.\n\n[공간 왜곡]\n사건 당시 해당 터널 구간의 길이가 실제 설계도(1.2km)보다 4km 이상 무한히 늘어난 것으로 측정됨. 지하 깊은 곳에서 거대한 유기체가 숨 쉬는 듯한 바람 소리가 녹음됨. \n\n경고: 해당 구간 진입 시 절대 멈춰 서거나 벽면을 응시하지 말 것."
+        description: "심야 선로 보수 작업 중 발생.\n\n[현상 기록]\n작업자들은 터널 벽면의 콘크리트 균열이 사람의 '눈꺼풀'처럼 벌어지며, 그 안에서 수천 개의 붉은 안광이 자신들을 응시했다고 보고함. 해당 시선에 10초 이상 노출된 2명은 즉시 망막 신경이 타버려 영구적으로 실명됨.\n\n[공간 왜곡]\n사건 당시 해당 터널 구간의 길이가 실제 설계도(1.2km)보다 4km 이상 무한히 늘어난 것으로 측정됨. 지하 깊은 곳에서 거대한 유기체가 숨 쉬는 듯한 바람 소리가 녹음됨. \n\n경고: 해당 구간 진입 시 절대 멈춰 서거나 벽면을 응시하지 말 것.",
+        evidence: {
+            mapCode: "SEC-SUB-4B",
+            siteStatus: "DISTORTED",
+            damageStatus: "RETINA_BURN",
+            currentStatus: "DO_NOT_LOOK"
+        }
     }
 ];
 
@@ -106,6 +139,72 @@ const TUTORIAL_TEXTS = [
     "귀하가 정신 강화 계열 및 회복 관련 계열 각성자가 아니라면 접근을 금합니다.",
     "인도자가 되신 것을 환영합니다. 행운을 빕니다."
 ];
+
+// --- Visual Evidence Component (CSS based simulation) ---
+const EvidenceScreen: React.FC<{ type: EvidenceType, label: string, status: string }> = ({ type, label, status }) => {
+    return (
+        <div className="flex flex-col h-full w-full border border-[#333] bg-black group relative overflow-hidden">
+            {/* Header */}
+            <div className="bg-[#111] border-b border-[#333] px-2 py-1 flex justify-between items-center text-[10px] font-mono text-gray-500">
+                <span className="truncate">{label}</span>
+                <span className="text-red-900 group-hover:text-red-500 transition-colors">REC</span>
+            </div>
+
+            {/* Visual Content Area */}
+            <div className="relative flex-1 w-full overflow-hidden">
+                {/* MAP SIMULATION */}
+                {type === 'MAP' && (
+                    <div className="absolute inset-0 bg-[#050505]">
+                        {/* Grid Lines */}
+                        <div className="absolute inset-0 bg-[linear-gradient(rgba(0,50,0,0.3)_1px,transparent_1px),linear-gradient(90deg,rgba(0,50,0,0.3)_1px,transparent_1px)] bg-[length:20px_20px]"></div>
+                        {/* Radar Scan */}
+                        <div className="absolute inset-0 bg-[conic-gradient(from_0deg,transparent_0deg,rgba(0,255,0,0.1)_60deg,transparent_60deg)] animate-[spin_4s_linear_infinite] origin-center opacity-30"></div>
+                        {/* Target Point */}
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-red-600 rounded-full animate-pulse shadow-[0_0_10px_red]"></div>
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 border border-red-800 rounded-full animate-ping opacity-50"></div>
+                        <div className="absolute bottom-2 right-2 text-[8px] text-green-700 font-mono">{status}</div>
+                    </div>
+                )}
+
+                {/* PHOTO/CAM SIMULATION */}
+                {type.startsWith('PHOTO') && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-[#080808]">
+                        {/* Noise Overlay */}
+                        <div className="absolute inset-0 noise-bg opacity-30"></div>
+                        {/* Content Placeholder */}
+                        <div className={`text-center font-mono tracking-widest p-2 border border-dashed 
+                            ${status === 'VISUAL_CONFIRMED' ? 'border-green-900 text-green-800' : 'border-red-900 text-red-800'}`}>
+                            
+                            <div className="text-2xl mb-1">{status === 'VISUAL_CONFIRMED' ? '👁️' : '⚠️'}</div>
+                            <div className="text-xs font-bold">{status}</div>
+                            {status === 'ENCRYPTED' && <div className="text-[8px] mt-1 animate-pulse">DECRYPTION FAILED</div>}
+                            {status === 'NO_SIGNAL' && <div className="text-[8px] mt-1 animate-pulse">LINK SEVERED</div>}
+                            {status === 'BIOHAZARD' && <div className="text-[8px] mt-1">ORGANIC MATTER DETECTED</div>}
+                        </div>
+                        {/* Crosshairs */}
+                        <div className="absolute top-2 left-2 w-2 h-2 border-t border-l border-gray-600"></div>
+                        <div className="absolute top-2 right-2 w-2 h-2 border-t border-r border-gray-600"></div>
+                        <div className="absolute bottom-2 left-2 w-2 h-2 border-b border-l border-gray-600"></div>
+                        <div className="absolute bottom-2 right-2 w-2 h-2 border-b border-r border-gray-600"></div>
+                    </div>
+                )}
+
+                {/* CORRUPT SIMULATION */}
+                {type === 'CORRUPT' && (
+                    <div className="absolute inset-0 bg-red-950/20 flex items-center justify-center overflow-hidden">
+                        <div className="absolute inset-0 noise-bg opacity-100 mix-blend-overlay"></div>
+                        <div className="text-red-600 font-black text-2xl tracking-tighter rotate-12 opacity-50 blur-[1px]">ERROR</div>
+                        <div className="absolute inset-0 bg-[repeating-linear-gradient(transparent,transparent_2px,black_3px)] opacity-50"></div>
+                    </div>
+                )}
+
+                {/* Scanline Overlay */}
+                <div className="absolute inset-0 pointer-events-none bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_2px,3px_100%] z-10"></div>
+            </div>
+        </div>
+    );
+};
+
 
 const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess, onLoginFail, currentAttempts, maxAttempts }) => {
     const [password, setPassword] = useState('');
@@ -433,47 +532,101 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess, onLoginFail, curr
                         </div>
                         
                         <div className="flex-1 overflow-y-auto p-6 md:p-10 custom-scrollbar">
-                            <div className="max-w-4xl mx-auto border border-red-900/40 bg-black p-6 md:p-8 relative">
-                                {/* Top Secret Stamp */}
-                                <div className="absolute top-4 right-4 border-2 border-red-800 text-red-800 px-2 py-1 text-xs font-black tracking-widest opacity-50 rotate-[-12deg] pointer-events-none">
-                                    TOP SECRET
-                                </div>
+                            <div className="max-w-6xl mx-auto flex flex-col lg:flex-row gap-8">
+                                
+                                {/* LEFT COLUMN: TEXT INFO */}
+                                <div className="flex-1 border border-red-900/40 bg-black p-6 md:p-8 relative">
+                                    {/* Top Secret Stamp */}
+                                    <div className="absolute top-4 right-4 border-2 border-red-800 text-red-800 px-2 py-1 text-xs font-black tracking-widest opacity-50 rotate-[-12deg] pointer-events-none">
+                                        TOP SECRET
+                                    </div>
 
-                                <div className="mb-8">
-                                    <div className="text-xs text-red-700 tracking-[0.3em] mb-1">SUBJECT</div>
-                                    <h1 className="text-2xl md:text-4xl text-white font-bold tracking-wider">{selectedReport.title}</h1>
-                                </div>
+                                    <div className="mb-8">
+                                        <div className="text-xs text-red-700 tracking-[0.3em] mb-1">SUBJECT</div>
+                                        <h1 className="text-2xl md:text-4xl text-white font-bold tracking-wider">{selectedReport.title}</h1>
+                                    </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                                    <div className="bg-[#0a0505] border-l-2 border-red-800 p-3">
-                                        <div className="text-xs text-gray-500 mb-1">LOCATION</div>
-                                        <div className="text-red-400">{selectedReport.location}</div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                                        <div className="bg-[#0a0505] border-l-2 border-red-800 p-3">
+                                            <div className="text-xs text-gray-500 mb-1">LOCATION</div>
+                                            <div className="text-red-400">{selectedReport.location}</div>
+                                        </div>
+                                        <div className="bg-[#0a0505] border-l-2 border-red-800 p-3">
+                                            <div className="text-xs text-gray-500 mb-1">STATUS</div>
+                                            <div className="text-red-500 font-bold animate-pulse">{selectedReport.status}</div>
+                                        </div>
+                                        <div className="bg-[#0a0505] border-l-2 border-red-800 p-3 col-span-1 md:col-span-2">
+                                            <div className="text-xs text-gray-500 mb-1">ORIGIN POINT</div>
+                                            <div className="text-red-300 font-mono text-sm">{selectedReport.origin}</div>
+                                        </div>
                                     </div>
-                                    <div className="bg-[#0a0505] border-l-2 border-red-800 p-3">
-                                        <div className="text-xs text-gray-500 mb-1">CURRENT STATUS</div>
-                                        <div className="text-red-500 font-bold animate-pulse">{selectedReport.status}</div>
+
+                                    <div className="relative border-t border-red-900/30 pt-6">
+                                        <div className="absolute -top-3 left-0 bg-black px-2 text-red-800 text-xs font-bold tracking-widest">INCIDENT DESCRIPTION</div>
+                                        <p className="text-gray-300 leading-8 font-mono text-base whitespace-pre-wrap">
+                                            {selectedReport.description}
+                                        </p>
                                     </div>
-                                    <div className="bg-[#0a0505] border-l-2 border-red-800 p-3">
-                                        <div className="text-xs text-gray-500 mb-1">ORIGIN POINT</div>
-                                        <div className="text-red-300 font-mono text-sm">{selectedReport.origin}</div>
-                                    </div>
-                                    <div className="bg-[#0a0505] border-l-2 border-red-800 p-3">
-                                        <div className="text-xs text-gray-500 mb-1">DAMAGE REPORT</div>
+                                    
+                                     <div className="mt-8 p-3 bg-red-950/20 border border-red-900/50">
+                                        <div className="text-xs text-red-500 mb-1 font-bold">DAMAGE REPORT</div>
                                         <div className="text-red-300 font-mono text-sm">{selectedReport.damage}</div>
                                     </div>
                                 </div>
 
-                                <div className="relative border-t border-red-900/30 pt-6">
-                                    <div className="absolute -top-3 left-0 bg-black px-2 text-red-800 text-xs font-bold tracking-widest">INCIDENT DESCRIPTION</div>
-                                    <p className="text-gray-300 leading-8 font-mono text-base md:text-lg whitespace-pre-wrap">
-                                        {selectedReport.description}
-                                    </p>
+                                {/* RIGHT COLUMN: VISUAL EVIDENCE GRID */}
+                                <div className="w-full lg:w-[400px] shrink-0 flex flex-col gap-4">
+                                    <div className="border-b border-red-800 pb-2 mb-2">
+                                        <h3 className="text-red-600 font-bold tracking-widest text-sm">[ VISUAL DATA ]</h3>
+                                    </div>
+                                    
+                                    <div className="grid grid-cols-2 gap-3 h-[400px]">
+                                        {/* 1. Tactical Map */}
+                                        <EvidenceScreen 
+                                            type="MAP" 
+                                            label="TACTICAL MAP" 
+                                            status={selectedReport.evidence.mapCode} 
+                                        />
+                                        
+                                        {/* 2. Site Photo */}
+                                        <EvidenceScreen 
+                                            type="PHOTO_SITE" 
+                                            label="SITE CAM #04" 
+                                            status={selectedReport.evidence.siteStatus} 
+                                        />
+
+                                        {/* 3. Damage Photo */}
+                                        <EvidenceScreen 
+                                            type="PHOTO_DAMAGE" 
+                                            label="DMG ASSESSMENT" 
+                                            status={selectedReport.evidence.damageStatus} 
+                                        />
+
+                                        {/* 4. Current Status */}
+                                        <EvidenceScreen 
+                                            type="PHOTO_CURRENT" 
+                                            label="LIVE FEED" 
+                                            status={selectedReport.evidence.currentStatus} 
+                                        />
+                                    </div>
+
+                                    <div className="bg-black border border-[#333] p-3 text-[10px] font-mono text-gray-500 mt-auto">
+                                        <div className="flex justify-between mb-1">
+                                            <span>ENCRYPTION:</span>
+                                            <span className="text-red-800">AES-4096 (BROKEN)</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span>SOURCE:</span>
+                                            <span>SAT_UPLINK_09</span>
+                                        </div>
+                                    </div>
                                 </div>
 
-                                <div className="mt-12 text-center">
-                                    <div className="inline-block border border-red-900 px-4 py-2 text-red-900 text-xs tracking-[0.5em] opacity-70">
-                                        END OF FILE
-                                    </div>
+                            </div>
+                            
+                             <div className="mt-12 text-center">
+                                <div className="inline-block border border-red-900 px-4 py-2 text-red-900 text-xs tracking-[0.5em] opacity-70">
+                                    END OF FILE
                                 </div>
                             </div>
                         </div>
