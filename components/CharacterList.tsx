@@ -14,10 +14,20 @@ interface CharacterCardProps {
     isSpecial: boolean;
     status: CharacterStatus;
     onClick: () => void;
+    factionColor?: string; // Optional color override for borders
 }
 
 // STORAGE KEY (Updated for new data structure)
 const STATUS_STORAGE_KEY = 'BLACK_PARADE_CHARACTER_STATUS_V2';
+
+// --- HELPER: Faction Logic ---
+const getFactionInfo = (idStr: string) => {
+    const id = parseInt(idStr, 10);
+    if (id >= 1 && id <= 4) return { name: 'ZERO HOUR', color: 'text-red-500', borderColor: 'border-red-600', bgGradient: 'from-red-900/10' };
+    if (id >= 5 && id <= 8) return { name: 'AEGIS', color: 'text-cyan-400', borderColor: 'border-cyan-600', bgGradient: 'from-cyan-900/10' };
+    if (id >= 9 && id <= 11) return { name: 'BLACK SWAN', color: 'text-purple-400', borderColor: 'border-purple-600', bgGradient: 'from-purple-900/10' };
+    return { name: 'UNKNOWN', color: 'text-gray-400', borderColor: 'border-gray-600', bgGradient: 'from-gray-900/10' };
+};
 
 // Visual Component for Deleted State (Noise + Staircase)
 const DeletedVisuals = () => (
@@ -59,9 +69,6 @@ const HeartbeatMonitor: React.FC<{ status: CharacterStatus }> = ({ status }) => 
             // Clear initially
             ctx.fillStyle = '#000000';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            // Draw Grid (Static Background) - We will redraw grid lines in the loop slightly differently
-            // or just let the black overwrite them. For simplicity in this style, we verify scan logic.
         };
 
         // Resize handling
@@ -76,7 +83,6 @@ const HeartbeatMonitor: React.FC<{ status: CharacterStatus }> = ({ status }) => 
         resizeObserver.observe(container);
 
         // EKG Pattern Logic
-        // Sequence of Y offsets from center
         const normalPattern = [0, 0, 0, -5, 5, -20, 40, -10, 0, 0, 0, 0, 0, 0, 0];
         let patternIndex = 0;
         let frameCount = 0;
@@ -84,22 +90,18 @@ const HeartbeatMonitor: React.FC<{ status: CharacterStatus }> = ({ status }) => 
         const render = () => {
             if (!canvas || !ctx) return;
 
-            // 1. "Eraser Bar" - Erase a small portion ahead of the current x
-            // This prevents the "Flicker" of clearing the whole screen
+            // 1. "Eraser Bar"
             ctx.fillStyle = '#000000';
             const eraseWidth = 10;
             ctx.fillRect(x, 0, eraseWidth + speed, canvas.height);
 
-            // 2. Draw Grid Lines (Only in the erased section to maintain background)
+            // 2. Draw Grid Lines
             ctx.strokeStyle = 'rgba(0, 50, 0, 0.3)';
             ctx.lineWidth = 1;
             ctx.beginPath();
-            // Vertical grid line check
             if (x % 20 < speed) { 
                 ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); 
             }
-            // Horizontal grid lines are tricky with partial erase, 
-            // so we re-draw horizontal lines in the erased chunk
             for (let i = 0; i < canvas.height; i += 20) {
                 ctx.moveTo(x, i); ctx.lineTo(x + eraseWidth, i);
             }
@@ -120,26 +122,22 @@ const HeartbeatMonitor: React.FC<{ status: CharacterStatus }> = ({ status }) => 
             let nextY = 50; // Center default
 
             if (status === 'DELETED') {
-                // Flatline - Fixed center
                 nextY = 50;
             } else {
-                // Alive or Missing (EKG Pattern)
-                if (frameCount % 3 === 0) { // Update Y every few frames
+                if (frameCount % 3 === 0) {
                      const p = normalPattern[patternIndex % normalPattern.length];
                      nextY = 50 + p;
                      patternIndex++;
                 } else {
-                    nextY = lastY; // Hold position
+                    nextY = lastY; 
                 }
             }
             
             x += speed; // Move forward
             
-            // Loop screen logic
             if (x > canvas.width) {
                 x = 0;
-                ctx.moveTo(0, nextY); // Move path start to beginning without drawing
-                // Do NOT clearRect here. The "Eraser Bar" at the top of loop handles the clearing.
+                ctx.moveTo(0, nextY);
             }
 
             ctx.lineTo(x, nextY);
@@ -176,12 +174,24 @@ const HeartbeatMonitor: React.FC<{ status: CharacterStatus }> = ({ status }) => 
 // Extracted CharacterCard
 const CharacterCard: React.FC<CharacterCardProps> = ({ char, isSpecial, status, onClick }) => {
     const [isHovered, setIsHovered] = useState(false);
+    const faction = getFactionInfo(char.id);
+
+    // Determine border color on hover based on faction or default red
+    const hoverBorderColor = faction.name === 'AEGIS' ? 'border-cyan-500' : 
+                             faction.name === 'BLACK SWAN' ? 'border-purple-500' : 
+                             faction.name === 'UNKNOWN' ? 'border-gray-500' : 
+                             'border-red-500';
+
+    const textColor = faction.name === 'AEGIS' ? 'text-cyan-400' : 
+                      faction.name === 'BLACK SWAN' ? 'text-purple-400' :
+                      faction.name === 'UNKNOWN' ? 'text-gray-400' :
+                      'text-red-500';
 
     // Badge styling based on status
     const getBadgeStyle = () => {
         switch (status) {
             case 'DELETED': return 'bg-red-600 text-black';
-            case 'MISSING': return 'bg-yellow-500 text-black'; // DISAPPEARED
+            case 'MISSING': return 'bg-yellow-500 text-black'; 
             case 'ALIVE': return 'bg-[#00ff00] text-black';
             default: return 'bg-[#00ff00] text-black';
         }
@@ -207,11 +217,11 @@ const CharacterCard: React.FC<CharacterCardProps> = ({ char, isSpecial, status, 
                 className={`flex flex-col items-center overflow-hidden transition-all duration-300 ease-out rounded-sm relative h-full
                 ${isHovered ? '-translate-y-2' : 'translate-y-0'} 
                 ${isSpecial 
-                    ? `bg-[#150505] border ${isHovered ? 'border-red-500 shadow-[0_10px_25px_rgba(255,0,0,0.5)]' : 'border-red-900/60'}` 
-                    : `bg-[#0f0f0f] border ${isHovered ? 'border-red-500 shadow-[0_10px_20px_rgba(255,0,0,0.3)]' : 'border-[#333]'}`
+                    ? `bg-[#150505] border ${isHovered ? `${hoverBorderColor} shadow-[0_10px_25px_rgba(255,0,0,0.3)]` : 'border-red-900/60'}` 
+                    : `bg-[#0f0f0f] border ${isHovered ? `${hoverBorderColor} shadow-[0_10px_20px_rgba(255,255,255,0.1)]` : 'border-[#333]'}`
                 }`}
             >
-                {/* Status Badge (Replacing Priority) */}
+                {/* Status Badge */}
                 {isSpecial && (
                     <div className={`absolute top-2 right-2 z-30 text-[10px] font-black px-2 py-0.5 tracking-widest animate-pulse pointer-events-none ${getBadgeStyle()}`}>
                         {getBadgeText()}
@@ -221,8 +231,8 @@ const CharacterCard: React.FC<CharacterCardProps> = ({ char, isSpecial, status, 
                 {/* Profile Image Section */}
                 <div className={`w-full h-48 bg-black overflow-hidden relative border-b transition-colors duration-300
                     ${isSpecial 
-                        ? (isHovered ? 'border-red-500' : 'border-red-900/30') 
-                        : (isHovered ? 'border-red-500/50' : 'border-[#222]')
+                        ? (isHovered ? hoverBorderColor : 'border-red-900/30') 
+                        : (isHovered ? `${hoverBorderColor} opacity-80` : 'border-[#222]')
                     }`}>
                     
                     <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_0%,_#000_100%)] z-10 opacity-50 pointer-events-none"></div>
@@ -237,7 +247,7 @@ const CharacterCard: React.FC<CharacterCardProps> = ({ char, isSpecial, status, 
                     ) : (
                         <div className={`w-full h-full flex items-center justify-center font-mono text-4xl tracking-widest
                             ${isSpecial ? 'text-red-900' : 'text-[#333]'}`}>
-                            SEC-{char.id}
+                            {char.name}
                         </div>
                     )}
 
@@ -251,23 +261,18 @@ const CharacterCard: React.FC<CharacterCardProps> = ({ char, isSpecial, status, 
                 {/* Text Content */}
                 <div className="p-4 text-center w-full relative flex-1 flex flex-col justify-center">
                      {/* Decorative corners */}
-                     <div className={`absolute top-0 left-0 w-2 h-2 border-t border-l transition-colors duration-300 ${isHovered ? 'border-red-500' : 'border-[#555]'}`}></div>
-                     <div className={`absolute top-0 right-0 w-2 h-2 border-t border-r transition-colors duration-300 ${isHovered ? 'border-red-500' : 'border-[#555]'}`}></div>
-                     <div className={`absolute bottom-0 left-0 w-2 h-2 border-b border-l transition-colors duration-300 ${isHovered ? 'border-red-500' : 'border-[#555]'}`}></div>
-                     <div className={`absolute bottom-0 right-0 w-2 h-2 border-b border-r transition-colors duration-300 ${isHovered ? 'border-red-500' : 'border-[#555]'}`}></div>
+                     <div className={`absolute top-0 left-0 w-2 h-2 border-t border-l transition-colors duration-300 ${isHovered ? hoverBorderColor : 'border-[#555]'}`}></div>
+                     <div className={`absolute top-0 right-0 w-2 h-2 border-t border-r transition-colors duration-300 ${isHovered ? hoverBorderColor : 'border-[#555]'}`}></div>
+                     <div className={`absolute bottom-0 left-0 w-2 h-2 border-b border-l transition-colors duration-300 ${isHovered ? hoverBorderColor : 'border-[#555]'}`}></div>
+                     <div className={`absolute bottom-0 right-0 w-2 h-2 border-b border-r transition-colors duration-300 ${isHovered ? hoverBorderColor : 'border-[#555]'}`}></div>
 
                     <div className={`text-xl font-bold mb-2 tracking-wider transition-colors duration-300
-                        ${isSpecial 
-                            ? (isHovered ? 'text-red-400' : 'text-red-500') 
-                            : (isHovered ? 'text-red-500' : 'text-white')
-                        } ${status === 'DELETED' ? 'line-through decoration-red-600 decoration-2 opacity-50' : ''}`}>
+                        ${isHovered ? textColor : 'text-white'}
+                        ${status === 'DELETED' ? 'line-through decoration-red-600 decoration-2 opacity-50' : ''}`}>
                         {char.name}
                     </div>
                     <div className={`h-[1px] w-12 mx-auto mb-3 transition-colors duration-300
-                        ${isSpecial 
-                            ? (isHovered ? 'bg-red-500' : 'bg-red-800') 
-                            : (isHovered ? 'bg-red-500' : 'bg-gray-700')
-                        }`}></div>
+                        ${isHovered ? 'bg-current' : 'bg-gray-700'}`}></div>
                     <div className="text-xs text-[#888] italic leading-relaxed px-2 line-clamp-3">
                         {status === 'DELETED' ? 'FILE CORRUPTED // DELETED' : (status === 'MISSING' ? 'LOCATION UNKNOWN // MISSING' : char.description)}
                     </div>
@@ -284,13 +289,15 @@ const CharacterDetail: React.FC<{
     onChangeStatus: (s: CharacterStatus) => void; 
     onClose: () => void 
 }> = ({ char, status, onChangeStatus, onClose }) => {
+    const faction = getFactionInfo(char.id);
+
     return (
         <div className="w-full h-full bg-[#0a0a0a] flex flex-col animate-[fadeIn_0.3s_ease-out]">
             {/* Header */}
             <div className="shrink-0 p-6 border-b border-[#333] flex justify-between items-center sticky top-0 bg-[#0a0a0a] z-20">
                 <div className="flex flex-col">
-                     <h2 className="text-white text-xl md:text-2xl tracking-[0.2em] truncate flex items-center gap-3">
-                        <span className="text-red-600 font-bold">{">>"}</span>
+                     <h2 className={`text-white text-xl md:text-2xl tracking-[0.2em] truncate flex items-center gap-3`}>
+                        <span className={`${faction.color} font-bold`}>{">>"}</span>
                         {char.name}
                     </h2>
                      <span className="text-[10px] text-gray-500 tracking-widest font-mono">ID: {char.id.padStart(4, '0')} // SECURE_FILE</span>
@@ -342,16 +349,16 @@ const CharacterDetail: React.FC<{
 
                     {/* Text Data Block */}
                     <div className="w-full md:w-7/12 flex flex-col">
-                        <div className="mb-8 border-l-2 border-red-600 pl-4 py-1 bg-gradient-to-r from-red-900/10 to-transparent">
+                        <div className={`mb-8 border-l-2 ${faction.borderColor} pl-4 py-1 bg-gradient-to-r ${faction.bgGradient} to-transparent`}>
                             <h1 className="text-3xl md:text-4xl text-white font-bold tracking-wider mb-1">{char.name}</h1>
-                            <div className="text-red-500 font-mono text-lg md:text-xl tracking-[0.2em] mt-2">
-                                {['1','2','3'].includes(char.id) ? 'CLASSIFIED // S-CLASS' : 'STANDARD PERSONNEL'}
+                            <div className={`${faction.color} font-mono text-lg md:text-xl tracking-[0.2em] mt-2`}>
+                                {faction.name}
                             </div>
                         </div>
 
                         <div className="space-y-6 font-mono text-base md:text-lg text-gray-300 leading-relaxed">
                             <div className="bg-[#111] border border-[#333] p-4 md:p-6 relative">
-                                <span className="absolute -top-3 left-4 bg-[#0a0a0a] px-2 text-sm md:text-base text-red-700 font-bold tracking-widest">
+                                <span className="absolute -top-3 left-4 bg-[#0a0a0a] px-2 text-sm md:text-base text-gray-500 font-bold tracking-widest">
                                     DATA_LOG
                                 </span>
                                 <p className="whitespace-pre-wrap pt-2">
@@ -362,19 +369,20 @@ const CharacterDetail: React.FC<{
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="bg-[#111] border border-[#333] p-4">
                                     <div className="text-sm md:text-base text-[#666] mb-1 font-bold">AFFILIATION</div>
-                                    <div className="text-gray-200 text-lg md:text-xl font-bold">
-                                        {['1', '2', '3'].includes(char.id) ? 'ZERO HOUR' : 'BLACK PARADE'}
+                                    <div className={`text-lg md:text-xl font-bold ${faction.color}`}>
+                                        {faction.name}
                                     </div>
                                 </div>
                                 <div className="bg-[#111] border border-[#333] p-4">
                                     <div className="text-sm md:text-base text-[#666] mb-1 font-bold">CLEARANCE</div>
-                                    <div className="text-red-400 text-lg md:text-xl font-bold">LEVEL {['1','2','3'].includes(char.id) ? '5 (MAX)' : '3'}</div>
+                                    <div className="text-gray-400 text-lg md:text-xl font-bold">
+                                        LEVEL {faction.name === 'ZERO HOUR' ? '5 (MAX)' : '3'}
+                                    </div>
                                 </div>
                             </div>
 
                             {/* Status Control Panel (3 Buttons) */}
                             <div className="w-full grid grid-cols-3 gap-0 border border-[#333] mt-2">
-                                {/* Button 1: MISSING (실종) - Yellow */}
                                 <button
                                     onClick={() => onChangeStatus('MISSING')}
                                     className={`py-3 font-mono font-bold tracking-wider text-sm md:text-base transition-all duration-300 border-r border-[#333] relative group overflow-hidden
@@ -385,7 +393,6 @@ const CharacterDetail: React.FC<{
                                     실종
                                 </button>
                                 
-                                {/* Button 2: DELETED - Red */}
                                 <button
                                     onClick={() => onChangeStatus('DELETED')}
                                     className={`py-3 font-mono font-bold tracking-wider text-sm md:text-base transition-all duration-300 border-r border-[#333] relative group overflow-hidden
@@ -396,7 +403,6 @@ const CharacterDetail: React.FC<{
                                     DELETED
                                 </button>
                                 
-                                {/* Button 3: ALIVE - Green */}
                                 <button
                                     onClick={() => onChangeStatus('ALIVE')}
                                     className={`py-3 font-mono font-bold tracking-wider text-sm md:text-base transition-all duration-300 relative group overflow-hidden
@@ -437,8 +443,6 @@ const CharacterList: React.FC<CharacterListProps> = ({ onBack }) => {
     const [characters, setCharacters] = useState<Character[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null);
-    
-    // Store status as a map: ID -> Status
     const [charStatuses, setCharStatuses] = useState<Record<string, CharacterStatus>>({});
 
     useEffect(() => {
@@ -449,13 +453,11 @@ const CharacterList: React.FC<CharacterListProps> = ({ onBack }) => {
         };
         fetchData();
 
-        // Load status from localStorage
         try {
             const stored = localStorage.getItem(STATUS_STORAGE_KEY);
             if (stored) {
                 setCharStatuses(JSON.parse(stored));
             } else {
-                // Fallback: check for old key version and migrate if necessary
                 const oldDeleted = localStorage.getItem('BLACK_PARADE_DELETED_RECORDS');
                 if (oldDeleted) {
                     const deletedList: string[] = JSON.parse(oldDeleted);
@@ -475,10 +477,15 @@ const CharacterList: React.FC<CharacterListProps> = ({ onBack }) => {
         localStorage.setItem(STATUS_STORAGE_KEY, JSON.stringify(updated));
     };
 
-    // Filter characters into Special (1,2,3) and Regular groups
-    const specialIds = ['1', '2', '3'];
-    const specialChars = characters.filter(c => specialIds.includes(c.id));
-    const regularChars = characters.filter(c => !specialIds.includes(c.id));
+    // Filter characters into specific groups based on ID
+    // 1-4: ZERO HOUR
+    // 5-8: AEGIS
+    // 9-11: BLACK SWAN
+    // 12-24: UNKNOWN
+    const zeroHour = characters.filter(c => { const id = parseInt(c.id); return id >= 1 && id <= 4; });
+    const aegis = characters.filter(c => { const id = parseInt(c.id); return id >= 5 && id <= 8; });
+    const blackSwan = characters.filter(c => { const id = parseInt(c.id); return id >= 9 && id <= 11; });
+    const unknown = characters.filter(c => { const id = parseInt(c.id); return id >= 12 && id <= 24; });
 
     if (loading) {
         return (
@@ -488,6 +495,9 @@ const CharacterList: React.FC<CharacterListProps> = ({ onBack }) => {
                     <br/>
                     <span className="text-xs text-gray-500 mt-2 block">FETCHING FROM /api/characters</span>
                 </div>
+                {/* Fixed Header/Footer for Loading State to prevent layout jump. Used absolute to keep inside relative container */}
+                <div className="absolute top-0 left-0 right-0 h-16 border-b border-[#333] bg-[#0a0a0a] z-50 opacity-50"></div>
+                <div className="absolute bottom-0 left-0 right-0 h-10 border-t border-[#333] bg-[#0a0a0a] z-50 opacity-50"></div>
             </div>
         );
     }
@@ -521,19 +531,19 @@ const CharacterList: React.FC<CharacterListProps> = ({ onBack }) => {
             </div>
             
             {/* Scrollable Content Area */}
-            <div className="flex-1 overflow-y-auto p-6 md:p-8 custom-scrollbar [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-[#050505] [&::-webkit-scrollbar-thumb]:bg-[#333] [&::-webkit-scrollbar-thumb]:hover:bg-red-600 transition-colors">
+            <div className="flex-1 overflow-y-auto p-6 md:p-8 custom-scrollbar [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-[#050505] [&::-webkit-scrollbar-thumb]:bg-[#333] [&::-webkit-scrollbar-thumb]:hover:bg-red-600 transition-colors space-y-12">
                 
-                {/* Special Priority Section (ID 1-3) */}
-                {specialChars.length > 0 && (
-                    <div className="mb-12 animate-[fadeIn_0.5s_ease-out]">
+                {/* 1. ZERO HOUR (Red) */}
+                {zeroHour.length > 0 && (
+                    <div className="animate-[fadeIn_0.4s_ease-out]">
                         <div className="flex items-center gap-3 mb-6 pb-2 border-b border-red-900/30">
                             <div className="w-2 h-2 bg-red-600 animate-pulse"></div>
                             <h3 className="text-red-500 font-mono text-lg tracking-[0.2em] font-bold">
-                                ELITE SQUAD // CLASS-S
+                                ZERO HOUR // ELITE
                             </h3>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {specialChars.map(char => (
+                            {zeroHour.map(char => (
                                 <CharacterCard 
                                     key={char.id} 
                                     char={char} 
@@ -546,26 +556,74 @@ const CharacterList: React.FC<CharacterListProps> = ({ onBack }) => {
                     </div>
                 )}
 
-                {/* Regular Personnel Section */}
-                <div className="animate-[fadeIn_0.7s_ease-out]">
-                     <div className="flex items-center gap-3 mb-6 pb-2 border-b border-[#333]">
-                        <div className="w-2 h-2 bg-gray-600"></div>
-                        <h3 className="text-gray-500 font-mono text-lg tracking-[0.2em] font-bold">
-                            STANDARD UNITS
-                        </h3>
+                {/* 2. AEGIS (Cyan) */}
+                {aegis.length > 0 && (
+                    <div className="animate-[fadeIn_0.5s_ease-out]">
+                        <div className="flex items-center gap-3 mb-6 pb-2 border-b border-cyan-900/30">
+                            <div className="w-2 h-2 bg-cyan-600"></div>
+                            <h3 className="text-cyan-500 font-mono text-lg tracking-[0.2em] font-bold">
+                                AEGIS // SECURITY
+                            </h3>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {aegis.map(char => (
+                                <CharacterCard 
+                                    key={char.id} 
+                                    char={char} 
+                                    isSpecial={false}
+                                    status={charStatuses[char.id] || 'ALIVE'}
+                                    onClick={() => setSelectedCharacter(char)}
+                                />
+                            ))}
+                        </div>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {regularChars.map(char => (
-                             <CharacterCard 
-                                key={char.id} 
-                                char={char} 
-                                isSpecial={false} 
-                                status={charStatuses[char.id] || 'ALIVE'}
-                                onClick={() => setSelectedCharacter(char)}
-                             />
-                        ))}
+                )}
+
+                {/* 3. BLACK SWAN (Purple) */}
+                {blackSwan.length > 0 && (
+                    <div className="animate-[fadeIn_0.6s_ease-out]">
+                        <div className="flex items-center gap-3 mb-6 pb-2 border-b border-purple-900/30">
+                            <div className="w-2 h-2 bg-purple-600"></div>
+                            <h3 className="text-purple-500 font-mono text-lg tracking-[0.2em] font-bold">
+                                BLACK SWAN // COVERT
+                            </h3>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {blackSwan.map(char => (
+                                <CharacterCard 
+                                    key={char.id} 
+                                    char={char} 
+                                    isSpecial={false}
+                                    status={charStatuses[char.id] || 'ALIVE'}
+                                    onClick={() => setSelectedCharacter(char)}
+                                />
+                            ))}
+                        </div>
                     </div>
-                </div>
+                )}
+
+                {/* 4. UNKNOWN (Gray) */}
+                {unknown.length > 0 && (
+                    <div className="animate-[fadeIn_0.7s_ease-out]">
+                         <div className="flex items-center gap-3 mb-6 pb-2 border-b border-[#333]">
+                            <div className="w-2 h-2 bg-gray-600"></div>
+                            <h3 className="text-gray-500 font-mono text-lg tracking-[0.2em] font-bold">
+                                UNKNOWN // SECTOR-Z
+                            </h3>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {unknown.map(char => (
+                                 <CharacterCard 
+                                    key={char.id} 
+                                    char={char} 
+                                    isSpecial={false} 
+                                    status={charStatuses[char.id] || 'ALIVE'}
+                                    onClick={() => setSelectedCharacter(char)}
+                                 />
+                            ))}
+                        </div>
+                    </div>
+                )}
 
             </div>
 

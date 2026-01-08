@@ -44,7 +44,7 @@ const MOCK_CHARACTERS: Character[] = Array.from({ length: 24 }, (_, i) => {
 
     return {
         id: id,
-        name: `NAME ${i + 1}`,
+        name: `SEC-${id}`, // Changed from NAME to SEC- for generic units
         description: 'UNKNOWN',
         image: ''
     };

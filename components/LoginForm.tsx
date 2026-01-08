@@ -253,8 +253,10 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess, onLoginFail, curr
 
     // Auto-scroll logs
     useEffect(() => {
-        if (logsEndRef.current) logsEndRef.current.scrollIntoView({ behavior: 'smooth' });
-        if (horrorLogsEndRef.current) horrorLogsEndRef.current.scrollIntoView({ behavior: 'auto' });
+        // Only scroll for horror logs, standard logs use flex-end layout
+        if (horrorLogsEndRef.current) {
+            horrorLogsEndRef.current.scrollIntoView({ behavior: 'auto', block: 'nearest' });
+        }
     }, [logs, horrorLogs]);
 
     // Watcher Effect & Shutdown Sequence (starts at 90s)
@@ -824,66 +826,69 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess, onLoginFail, curr
                     </div>
                 </div>
 
-                {isLoading ? (
-                    // Hacker Log View
-                    <div className="w-full bg-[#050505] border border-green-900/50 p-4 font-mono text-sm relative overflow-hidden shadow-[inset_0_0_20px_rgba(0,255,0,0.1)]">
-                        <div className="absolute top-0 left-0 right-0 h-[2px] bg-green-500/50 shadow-[0_0_10px_#00ff00] animate-[scan_2s_linear_infinite]"></div>
-                        <div className="h-[200px] overflow-hidden flex flex-col justify-end">
-                            {logs.map((log, i) => (
-                                <div key={i} className="text-green-500/90 text-xs md:text-sm leading-tight truncate">
-                                    {log}
-                                </div>
-                            ))}
-                            <div ref={logsEndRef} />
+                {/* WRAPPER MODIFIED: Fixed height container with absolute positioning to prevent jumping */}
+                <div className="w-full max-w-md h-[300px] relative"> 
+                    {isLoading ? (
+                        // Hacker Log View - Absolutely positioned to fill the parent container
+                        <div className="absolute inset-0 w-full h-full bg-[#050505] border border-green-900/50 p-4 font-mono text-sm overflow-hidden shadow-[inset_0_0_20px_rgba(0,255,0,0.1)] flex flex-col">
+                            <div className="absolute top-0 left-0 right-0 h-[2px] bg-green-500/50 shadow-[0_0_10px_#00ff00] animate-[scan_2s_linear_infinite]"></div>
+                            <div className="h-full overflow-hidden flex flex-col justify-end">
+                                {logs.map((log, i) => (
+                                    <div key={i} className="text-green-500/90 text-xs md:text-sm leading-tight truncate">
+                                        {log}
+                                    </div>
+                                ))}
+                                <div ref={logsEndRef} />
+                            </div>
                         </div>
-                    </div>
-                ) : (
-                    // Normal Input View
-                    <div className="w-full max-w-md flex flex-col items-center gap-8 pointer-events-auto">
-                        
-                        {/* Input Field with Tech Styling */}
-                        <div className="relative w-full group">
-                            <input 
-                                type="password" 
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                onKeyDown={(e) => {
-                                    if (e.key === 'Enter') handleAttempt();
-                                }}
-                                placeholder="ENTER PASSWORD"
-                                className="w-full bg-transparent border-b-2 border-[#333] text-center text-2xl md:text-3xl py-3 text-white font-mono outline-none tracking-widest placeholder-gray-800 focus:border-red-600 transition-colors duration-300"
-                            />
-                            {/* Animated Underline Effect */}
-                            <div className="absolute bottom-0 left-0 w-0 h-[2px] bg-red-600 transition-all duration-500 group-focus-within:w-full shadow-[0_0_10px_red]"></div>
-                        </div>
-                        
-                        {/* Main Action Button */}
-                        <button 
-                            onClick={handleAttempt}
-                            className="w-full relative group overflow-hidden bg-[#111] hover:bg-red-950/30 text-white border border-[#333] hover:border-red-600 py-4 px-8 transition-all duration-300"
-                        >
-                            <span className="relative z-10 text-lg md:text-xl tracking-[0.3em] font-bold group-hover:text-red-500 transition-colors">
-                                ACCESS
-                            </span>
-                            {/* Button Scan Effect */}
-                            <div className="absolute inset-0 bg-red-600/10 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 ease-in-out skew-x-12"></div>
-                        </button>
-                        
-                        {/* Anomaly Button - Boxed Style */}
-                        <div className="mt-6 w-full">
-                            <button
-                                onClick={() => !showTutorial && setAnomalyState('WARNING')}
-                                className="w-full relative group overflow-hidden bg-[#050000] hover:bg-red-950/20 text-red-900 border border-red-900/30 hover:border-red-600 py-3 px-4 transition-all duration-300"
+                    ) : (
+                        // Normal Input View - Absolutely positioned to fill the parent container and center content
+                        <div className="absolute inset-0 w-full h-full flex flex-col justify-center items-center gap-6 pointer-events-auto"> 
+                            
+                            {/* Input Field with Tech Styling */}
+                            <div className="relative w-full group">
+                                <input 
+                                    type="password" 
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') handleAttempt();
+                                    }}
+                                    placeholder="ENTER PASSWORD"
+                                    className="w-full bg-transparent border-b-2 border-[#333] text-center text-2xl md:text-3xl py-3 text-white font-mono outline-none tracking-widest placeholder-gray-800 focus:border-red-600 transition-colors duration-300"
+                                />
+                                {/* Animated Underline Effect */}
+                                <div className="absolute bottom-0 left-0 w-0 h-[2px] bg-red-600 transition-all duration-500 group-focus-within:w-full shadow-[0_0_10px_red]"></div>
+                            </div>
+                            
+                            {/* Main Action Button */}
+                            <button 
+                                onClick={handleAttempt}
+                                className="w-full relative group overflow-hidden bg-[#111] hover:bg-red-950/30 text-white border border-[#333] hover:border-red-600 py-4 px-8 transition-all duration-300"
                             >
-                                <span className="relative z-10 text-xs md:text-sm tracking-[0.2em] font-bold group-hover:text-red-500 transition-colors font-mono">
-                                    [ SYSTEM ANOMALY DETECTED ]
+                                <span className="relative z-10 text-lg md:text-xl tracking-[0.3em] font-bold group-hover:text-red-500 transition-colors">
+                                    ACCESS
                                 </span>
-                                {/* Scan Effect */}
-                                <div className="absolute inset-0 bg-red-600/10 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 ease-in-out"></div>
+                                {/* Button Scan Effect */}
+                                <div className="absolute inset-0 bg-red-600/10 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 ease-in-out skew-x-12"></div>
                             </button>
+                            
+                            {/* Anomaly Button - Boxed Style */}
+                            <div className="mt-6 w-full">
+                                <button
+                                    onClick={() => !showTutorial && setAnomalyState('WARNING')}
+                                    className="w-full relative group overflow-hidden bg-[#050000] hover:bg-red-950/20 text-red-900 border border-red-900/30 hover:border-red-600 py-3 px-4 transition-all duration-300"
+                                >
+                                    <span className="relative z-10 text-xs md:text-sm tracking-[0.2em] font-bold group-hover:text-red-500 transition-colors font-mono">
+                                        [ SYSTEM ANOMALY DETECTED ]
+                                    </span>
+                                    {/* Scan Effect */}
+                                    <div className="absolute inset-0 bg-red-600/10 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 ease-in-out"></div>
+                                </button>
+                            </div>
                         </div>
-                    </div>
-                )}
+                    )}
+                </div>
 
                 {/* Status / Message Area */}
                 <div className="mt-10 h-8 text-center">
