@@ -685,7 +685,20 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess, onLoginFail, curr
     }
 
     return (
-        <div className={`relative z-10 w-full h-full bg-[#0a0a0a] border-none p-6 md:p-16 flex flex-col justify-center items-center text-center transition-transform duration-100 ${isShaking ? 'animate-shake' : ''}`}>
+        <div className={`relative z-10 w-full h-full bg-[#050505] flex flex-col justify-center items-center overflow-hidden transition-transform duration-100 ${isShaking ? 'animate-shake' : ''}`}>
+            
+            {/* --- BACKGROUND EFFECTS --- */}
+            {/* Grid Pattern */}
+            <div className="absolute inset-0 z-0 bg-[linear-gradient(rgba(0,30,0,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(0,30,0,0.1)_1px,transparent_1px)] bg-[length:40px_40px] pointer-events-none opacity-50"></div>
+            {/* Vignette */}
+            <div className="absolute inset-0 z-0 bg-[radial-gradient(circle_at_center,transparent_0%,#000_90%)] pointer-events-none"></div>
+            {/* Rotating UI Element (Radar/Target) */}
+            <div className="absolute inset-0 z-0 flex items-center justify-center opacity-10 pointer-events-none">
+                 <div className="w-[800px] h-[800px] border border-green-900/30 rounded-full animate-[spin_60s_linear_infinite] flex items-center justify-center">
+                    <div className="w-[600px] h-[600px] border border-dashed border-green-900/30 rounded-full animate-[spin_40s_linear_infinite_reverse]"></div>
+                 </div>
+            </div>
+
             {/* Tutorial Overlay */}
             {showTutorial && (
                 <>
@@ -718,7 +731,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess, onLoginFail, curr
             {anomalyState === 'WARNING' && (
                 <div className="absolute inset-0 bg-black/95 flex flex-col items-center justify-center p-4 md:p-8 z-50 border-2 border-red-600 animate-[fadeIn_0.2s_ease-out]">
                     <div className="text-red-600 text-5xl md:text-6xl mb-4 md:mb-6 animate-pulse">⚠️</div>
-                    <div className="text-red-500 font-bold text-base md:text-lg mb-6 md:mb-8 leading-relaxed tracking-wider break-keep">
+                    <div className="text-red-500 font-bold text-base md:text-lg mb-6 md:mb-8 leading-relaxed tracking-wider break-keep text-center">
                         해당 접근은 사망,결손,중상 등<br/>
                         귀하의 신변에 위협이 될 수 있습니다.<br/><br/>
                         정말로 접근하시겠습니까?
@@ -784,66 +797,113 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess, onLoginFail, curr
                 </div>
             )}
 
-            <h1 className="text-4xl md:text-7xl text-white mb-4 md:mb-6 tracking-[4px] md:tracking-[8px] drop-shadow-[2px_2px_0_rgba(0,255,0,1)] font-bold">
-                BLACK PARADE
-            </h1>
-            
-            <div className="text-xs md:text-base text-[#555] mb-6 md:mb-10 py-3 md:py-4 border-y border-dashed border-[#333] leading-relaxed tracking-wider">
-                SYSTEM: SECURE // SERVER: NESTJS-CORE-V9<br/>
-                STATUS: {isLoading ? <span className="text-[#00ff00] animate-pulse">INTRUSION IN PROGRESS...</span> : 'WAITING FOR INPUT...'}
-                {currentAttempts > 0 && !isLoading && (
-                     <div className="text-red-500 font-bold mt-2 animate-pulse">
-                        FAILED ATTEMPTS: {currentAttempts}
-                     </div>
-                )}
-            </div>
+            {/* --- MAIN LOGIN CARD --- */}
+            <div className={`relative z-10 w-full max-w-2xl p-8 md:p-12 flex flex-col items-center transition-all duration-700 ease-in-out ${showTutorial && tutorialStep === 2 ? 'scale-110 md:scale-125 z-[201] relative pointer-events-none' : ''}`}>
+                
+                {/* Title Section - Redesigned */}
+                <div className="mb-12 text-center relative group">
+                    {/* Top Label */}
+                    <div className="flex items-center justify-center gap-2 mb-2 opacity-70">
+                        <div className="h-[1px] w-8 bg-red-600"></div>
+                        <span className="text-[10px] md:text-xs text-red-500 tracking-[0.4em] font-mono font-bold">
+                            RESTRICTED AREA
+                        </span>
+                        <div className="h-[1px] w-8 bg-red-600"></div>
+                    </div>
 
-            {isLoading ? (
-                // Hacker Log View
-                <div className="w-full bg-black border border-[#00ff00] p-4 md:p-6 mb-6 md:mb-8 text-left h-[150px] md:h-[200px] overflow-hidden flex flex-col justify-end shadow-[inset_0_0_10px_rgba(0,255,0,0.2)]">
-                    {logs.map((log, i) => (
-                        <div key={i} className="text-[#00ff00] font-mono text-sm md:text-lg leading-tight opacity-90 truncate">
-                            {log}
+                    {/* Main Title - Clean, Sharp, High Contrast */}
+                    <h1 className="text-6xl md:text-8xl font-black text-white tracking-tight drop-shadow-2xl select-none">
+                        ZERO HOUR
+                    </h1>
+
+                    {/* Bottom Status - Clean Tech Mono */}
+                    <div className="mt-4 flex flex-col items-center gap-1">
+                        <div className="text-[10px] text-gray-500 font-mono tracking-widest">
+                            SYSTEM_VERSION: <span className="text-gray-300">v.4.0.2</span>
                         </div>
-                    ))}
-                    <div ref={logsEndRef} />
-                </div>
-            ) : (
-                // Normal Input View
-                <div className={`w-full flex flex-col items-center transition-all duration-700 ease-in-out ${showTutorial && tutorialStep === 2 ? 'scale-110 md:scale-125 z-[201] relative pointer-events-none' : ''}`}>
-                    <input 
-                        type="password" 
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        onKeyDown={(e) => {
-                            if (e.key === 'Enter') handleAttempt();
-                        }}
-                        placeholder="PASSWORD"
-                        className={`w-full md:w-[80%] bg-[#111] border border-[#444] text-red-500 p-4 md:p-6 text-2xl md:text-3xl font-mono outline-none mb-6 md:mb-8 text-center transition-all duration-300 focus:border-red-500 focus:shadow-[0_0_10px_rgba(255,0,0,0.5)] placeholder-gray-700 rounded-none`}
-                    />
-                    
-                    <button 
-                        onClick={handleAttempt}
-                        className={`w-full md:w-auto bg-[#222] text-white border border-white py-3 px-8 md:py-4 md:px-12 text-lg md:text-xl tracking-widest transition-all duration-300 hover:bg-red-500 hover:text-black hover:font-bold hover:border-red-500 cursor-pointer`}
-                    >
-                        접속
-                    </button>
-                    
-                    <div className="mt-6 md:mt-8 pointer-events-auto">
-                        <button
-                            onClick={() => !showTutorial && setAnomalyState('WARNING')}
-                            className="w-full md:w-auto bg-[#222] text-white border border-white py-3 px-8 md:py-4 md:px-12 text-lg md:text-xl tracking-widest transition-all duration-300 hover:bg-red-500 hover:text-black hover:font-bold hover:border-red-500 cursor-pointer"
-                        >
-                            [ 이상현상 ]
-                        </button>
                     </div>
                 </div>
-            )}
 
-            <div className={`mt-6 md:mt-8 min-h-[40px] text-base md:text-lg font-bold ${message?.type === 'success' ? 'text-[#00ff00]' : message?.type === 'neutral' ? 'text-yellow-500' : 'text-[#ff0000]'}`}>
-                {message?.text && !isLoading && (
-                    <span dangerouslySetInnerHTML={{ __html: message.text.replace(/\n/g, '<br/>') }}></span>
+                {isLoading ? (
+                    // Hacker Log View
+                    <div className="w-full bg-[#050505] border border-green-900/50 p-4 font-mono text-sm relative overflow-hidden shadow-[inset_0_0_20px_rgba(0,255,0,0.1)]">
+                        <div className="absolute top-0 left-0 right-0 h-[2px] bg-green-500/50 shadow-[0_0_10px_#00ff00] animate-[scan_2s_linear_infinite]"></div>
+                        <div className="h-[200px] overflow-hidden flex flex-col justify-end">
+                            {logs.map((log, i) => (
+                                <div key={i} className="text-green-500/90 text-xs md:text-sm leading-tight truncate">
+                                    {log}
+                                </div>
+                            ))}
+                            <div ref={logsEndRef} />
+                        </div>
+                    </div>
+                ) : (
+                    // Normal Input View
+                    <div className="w-full max-w-md flex flex-col items-center gap-8 pointer-events-auto">
+                        
+                        {/* Input Field with Tech Styling */}
+                        <div className="relative w-full group">
+                            <input 
+                                type="password" 
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') handleAttempt();
+                                }}
+                                placeholder="ENTER PASSWORD"
+                                className="w-full bg-transparent border-b-2 border-[#333] text-center text-2xl md:text-3xl py-3 text-white font-mono outline-none tracking-widest placeholder-gray-800 focus:border-red-600 transition-colors duration-300"
+                            />
+                            {/* Animated Underline Effect */}
+                            <div className="absolute bottom-0 left-0 w-0 h-[2px] bg-red-600 transition-all duration-500 group-focus-within:w-full shadow-[0_0_10px_red]"></div>
+                        </div>
+                        
+                        {/* Main Action Button */}
+                        <button 
+                            onClick={handleAttempt}
+                            className="w-full relative group overflow-hidden bg-[#111] hover:bg-red-950/30 text-white border border-[#333] hover:border-red-600 py-4 px-8 transition-all duration-300"
+                        >
+                            <span className="relative z-10 text-lg md:text-xl tracking-[0.3em] font-bold group-hover:text-red-500 transition-colors">
+                                ACCESS
+                            </span>
+                            {/* Button Scan Effect */}
+                            <div className="absolute inset-0 bg-red-600/10 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 ease-in-out skew-x-12"></div>
+                        </button>
+                        
+                        {/* Anomaly Button - Boxed Style */}
+                        <div className="mt-6 w-full">
+                            <button
+                                onClick={() => !showTutorial && setAnomalyState('WARNING')}
+                                className="w-full relative group overflow-hidden bg-[#050000] hover:bg-red-950/20 text-red-900 border border-red-900/30 hover:border-red-600 py-3 px-4 transition-all duration-300"
+                            >
+                                <span className="relative z-10 text-xs md:text-sm tracking-[0.2em] font-bold group-hover:text-red-500 transition-colors font-mono">
+                                    [ SYSTEM ANOMALY DETECTED ]
+                                </span>
+                                {/* Scan Effect */}
+                                <div className="absolute inset-0 bg-red-600/10 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 ease-in-out"></div>
+                            </button>
+                        </div>
+                    </div>
                 )}
+
+                {/* Status / Message Area */}
+                <div className="mt-10 h-8 text-center">
+                    {message?.text && !isLoading && (
+                        <div className={`text-sm md:text-base font-bold tracking-wider animate-pulse ${
+                            message.type === 'success' ? 'text-green-500 drop-shadow-[0_0_5px_green]' : 
+                            message.type === 'neutral' ? 'text-yellow-500' : 
+                            'text-red-500 drop-shadow-[0_0_5px_red]'
+                        }`}>
+                            <span dangerouslySetInnerHTML={{ __html: message.text.replace(/\n/g, '<br/>') }}></span>
+                        </div>
+                    )}
+                    {!message && !isLoading && (
+                        <div className="text-gray-700 text-xs tracking-widest font-mono">
+                            WAITING FOR INPUT...
+                            {currentAttempts > 0 && <span className="text-red-900 ml-2">FAILED: {currentAttempts}</span>}
+                        </div>
+                    )}
+                </div>
+
             </div>
         </div>
     );
