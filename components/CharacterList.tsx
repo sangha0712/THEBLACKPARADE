@@ -1,6 +1,8 @@
+
 import React, { useEffect, useState, useRef } from 'react';
 import { Character } from '../types';
 import { getCharacters } from '../api';
+import { startHeartbeat, startFlatline, stopMonitorSound } from '../utils/sound';
 
 interface CharacterListProps {
     onBack: () => void;
@@ -162,7 +164,7 @@ const HeartbeatMonitor: React.FC<{ status: CharacterStatus }> = ({ status }) => 
         <div ref={containerRef} className="w-full bg-black border border-[#333] mt-2 relative h-[100px] overflow-hidden">
             <div className="absolute top-1 left-2 text-[10px] font-mono tracking-widest z-10 flex gap-2">
                 <span className={`${status === 'DELETED' ? 'text-red-500' : (status === 'MISSING' ? 'text-yellow-500' : 'text-green-500')}`}>
-                    BPM: {status === 'DELETED' ? '0' : (status === 'MISSING' ? 'ERR' : '72')}
+                    BPM: {status === 'DELETED' ? '0' : (status === 'MISSING' ? 'ERR' : '40')}
                 </span>
                 <span className="text-gray-600">ECG_LEAD_II</span>
             </div>
@@ -290,6 +292,19 @@ const CharacterDetail: React.FC<{
     onClose: () => void 
 }> = ({ char, status, onChangeStatus, onClose }) => {
     const faction = getFactionInfo(char.id);
+
+    // [NEW] Sound Effect Hook
+    useEffect(() => {
+        if (status === 'DELETED') {
+            startFlatline();
+        } else {
+            startHeartbeat();
+        }
+
+        return () => {
+            stopMonitorSound();
+        };
+    }, [status]);
 
     return (
         <div className="w-full h-full bg-[#0a0a0a] flex flex-col animate-[fadeIn_0.3s_ease-out]">

@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
+import { startTransitionLoop, stopTransitionLoop, playAccessCompleted } from '../utils/sound';
 
 interface TransitionScreenProps {
     onComplete: () => void;
@@ -12,6 +13,9 @@ const TransitionScreen: React.FC<TransitionScreenProps> = ({ onComplete }) => {
     useEffect(() => {
         const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*[]{}<>/|\\';
         
+        // Start the data stream sound loop
+        startTransitionLoop();
+
         const interval = setInterval(() => {
             const randomStr = Array(Math.floor(Math.random() * 80) + 20)
                 .fill(0)
@@ -31,6 +35,10 @@ const TransitionScreen: React.FC<TransitionScreenProps> = ({ onComplete }) => {
         // Show "ACCESS COMPLETED" after 5s (User request)
         const timer1 = setTimeout(() => {
             setShowTitle(true);
+            // Stop the scrolling sound
+            stopTransitionLoop();
+            // Play the success impact sound
+            playAccessCompleted();
         }, 5000);
 
         // Complete after 7s (5s wait + 2s display time)
@@ -42,6 +50,8 @@ const TransitionScreen: React.FC<TransitionScreenProps> = ({ onComplete }) => {
             clearInterval(interval);
             clearTimeout(timer1);
             clearTimeout(timer2);
+            // Ensure sound stops if component unmounts early
+            stopTransitionLoop();
         };
     }, [onComplete]);
 

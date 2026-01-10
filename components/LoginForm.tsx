@@ -1,6 +1,7 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { login } from '../api';
-import { playErrorSound, playAccessDeniedBeep, initAudio } from '../utils/sound';
+import { playErrorSound, playAccessDeniedBeep, initAudio, playDataBlip, playAccessGranted, playHackingBlip } from '../utils/sound';
 
 interface LoginFormProps {
     onLoginSuccess: () => void;
@@ -328,10 +329,14 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess, onLoginFail, curr
         let interval: ReturnType<typeof setInterval>;
         if (isLoading && anomalyState === 'NONE') {
             setLogs(["> SYSTEM UPLINK STARTED..."]);
+            // Play initial blip
+            playDataBlip();
             interval = setInterval(() => {
                 setLogs(prev => {
                     const randomLog = HACKER_LOGS[Math.floor(Math.random() * HACKER_LOGS.length)];
                     const hexPrefix = `0x${Math.floor(Math.random() * 16777215).toString(16).toUpperCase().padStart(6, '0')}`;
+                    // Play blip on each log entry
+                    playDataBlip();
                     return [...prev, `[${hexPrefix}] ${randomLog}`].slice(-8); 
                 });
             }, 150);
@@ -355,6 +360,8 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess, onLoginFail, curr
             const isSuccess = await login(password);
             if (isSuccess) {
                 setLogs(prev => [...prev, ">> ACCESS GRANTED <<"]);
+                // Play Success Chime
+                playAccessGranted();
                 await new Promise(r => setTimeout(r, 500));
                 setMessage({ text: "IDENTITY VERIFIED. ACCESS GRANTED.", type: 'success' });
                 onLoginSuccess();
@@ -407,8 +414,14 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess, onLoginFail, curr
         let interval: ReturnType<typeof setInterval>;
         let counter = 0;
 
+        // Play initial sound
+        playHackingBlip();
+
         // Generate rapid red logs for 8.5 seconds
         interval = setInterval(() => {
+            // Play hacking/breach sound effect on every tick
+            playHackingBlip();
+
             setHorrorLogs(prev => {
                 const randomLog = HORROR_LOGS[Math.floor(Math.random() * HORROR_LOGS.length)];
                 const timestamp = new Date().toISOString().split('T')[1].slice(0, -1);

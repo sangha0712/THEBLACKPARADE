@@ -5,7 +5,7 @@ import DeathScreen from './components/DeathScreen';
 import TransitionScreen from './components/TransitionScreen';
 import { AppState } from './types';
 import { MAX_ATTEMPTS } from './constants';
-import { playDeathNoise } from './utils/sound';
+import { playDeathNoise, initAudio, startAmbience } from './utils/sound';
 
 const App: React.FC = () => {
     const [appState, setAppState] = useState<AppState>(AppState.LOGIN);
@@ -18,6 +18,25 @@ const App: React.FC = () => {
     useEffect(() => {
         const timer = setInterval(() => setCurrentTime(new Date()), 1000);
         return () => clearInterval(timer);
+    }, []);
+
+    // Setup Audio Context on first interaction to allow ambient sound
+    useEffect(() => {
+        const handleInteraction = async () => {
+            await initAudio();
+            startAmbience();
+            // Remove listeners once activated
+            window.removeEventListener('click', handleInteraction);
+            window.removeEventListener('keydown', handleInteraction);
+        };
+
+        window.addEventListener('click', handleInteraction);
+        window.addEventListener('keydown', handleInteraction);
+
+        return () => {
+            window.removeEventListener('click', handleInteraction);
+            window.removeEventListener('keydown', handleInteraction);
+        };
     }, []);
 
     const handleLoginSuccess = useCallback(() => {
