@@ -17,7 +17,7 @@ const MOCK_CHARACTERS: Character[] = Array.from({ length: 24 }, (_, i) => {
         return {
             id: '1',
             name: '상중하',
-            description: '능력: 신속 | 클래스: A',
+            description: '능력: 리플렉트 | 클래스: A',
             image: 'https://igx.kr/r/2C/0/0'
         };
     }
@@ -39,6 +39,116 @@ const MOCK_CHARACTERS: Character[] = Array.from({ length: 24 }, (_, i) => {
             name: '챠린',
             description: '능력:X/클래스 S',
             image: 'https://igx.kr/r/2C/2/0'
+        };
+    }
+
+    // ID 4 Custom Data
+    if (id === '4') {
+        return {
+            id: '4',
+            name: '미야',
+            description: '능력:포켓 디멘션/클래스 A',
+            image: 'https://igx.kr/r/2C/3/0'
+        };
+    }
+
+    // ID 5
+    if (id === '5') {
+        return {
+            id: '5',
+            name: '강진혁',
+            description: '능력:사일런스/클래스 S',
+            image: 'https://igx.kr/r/2C/5/0'
+        };
+    }
+
+    // ID 6
+    if (id === '6') {
+        return {
+            id: '6',
+            name: '유나',
+            description: '능력:데이터 링크/클래스 B',
+            image: 'https://igx.kr/r/2C/4/0'
+        };
+    }
+
+    // ID 7
+    if (id === '7') {
+        return {
+            id: '7',
+            name: '박준수',
+            description: '능력:그래비티 필드/클래스 C',
+            image: 'https://igx.kr/r/2C/6/0'
+        };
+    }
+
+    // ID 8
+    if (id === '8') {
+        return {
+            id: '8',
+            name: '윤세아',
+            description: '능력:마리오네트/클래스 B',
+            image: 'https://igx.kr/r/2C/7/0'
+        };
+    }
+
+    // ID 9
+    if (id === '9') {
+        return {
+            id: '9',
+            name: '레이븐',
+            description: '능력:헤마토맨시/클래스 S',
+            image: 'https://igx.kr/r/2C/8/0'
+        };
+    }
+
+    // ID 10
+    if (id === '10') {
+        return {
+            id: '10',
+            name: '바이퍼',
+            description: '능력:톡신 스킨/클래스 A',
+            image: 'https://igx.kr/r/2C/14/0'
+        };
+    }
+
+    // ID 11
+    if (id === '11') {
+        return {
+            id: '11',
+            name: '조커',
+            description: '능력:미러 이미지/클래스 A',
+            image: 'https://igx.kr/r/2C/10/0'
+        };
+    }
+
+    // ID 12
+    if (id === '12') {
+        return {
+            id: '12',
+            name: '그레이',
+            description: '능력:오염 동화/클래스 A',
+            image: 'https://igx.kr/r/2C/11/0'
+        };
+    }
+
+    // ID 13
+    if (id === '13') {
+        return {
+            id: '13',
+            name: '제트',
+            description: '능력:에어로 로드/클래스 B',
+            image: 'https://igx.kr/r/2C/13/0'
+        };
+    }
+
+    // ID 14
+    if (id === '14') {
+        return {
+            id: '14',
+            name: '이수연',
+            description: '능력:퓨리파이/클래스 S',
+            image: 'https://igx.kr/r/2C/12/0'
         };
     }
 

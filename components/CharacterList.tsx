@@ -25,7 +25,7 @@ const getFactionInfo = (idStr: string) => {
     const id = parseInt(idStr, 10);
     if (id >= 1 && id <= 4) return { name: 'ZERO HOUR', color: 'text-red-500', borderColor: 'border-red-600', bgGradient: 'from-red-900/10' };
     if (id >= 5 && id <= 8) return { name: 'AEGIS', color: 'text-cyan-400', borderColor: 'border-cyan-600', bgGradient: 'from-cyan-900/10' };
-    if (id >= 9 && id <= 11) return { name: 'BLACK SWAN', color: 'text-purple-400', borderColor: 'border-purple-600', bgGradient: 'from-purple-900/10' };
+    if (id >= 9 && id <= 12) return { name: 'BLACK SWAN', color: 'text-purple-400', borderColor: 'border-purple-600', bgGradient: 'from-purple-900/10' };
     return { name: 'UNKNOWN', color: 'text-gray-400', borderColor: 'border-gray-600', bgGradient: 'from-gray-900/10' };
 };
 
@@ -480,12 +480,12 @@ const CharacterList: React.FC<CharacterListProps> = ({ onBack }) => {
     // Filter characters into specific groups based on ID
     // 1-4: ZERO HOUR
     // 5-8: AEGIS
-    // 9-11: BLACK SWAN
-    // 12-24: UNKNOWN
+    // 9-12: BLACK SWAN (Updated to include 12)
+    // 13-24: UNKNOWN (Updated start from 13)
     const zeroHour = characters.filter(c => { const id = parseInt(c.id); return id >= 1 && id <= 4; });
     const aegis = characters.filter(c => { const id = parseInt(c.id); return id >= 5 && id <= 8; });
-    const blackSwan = characters.filter(c => { const id = parseInt(c.id); return id >= 9 && id <= 11; });
-    const unknown = characters.filter(c => { const id = parseInt(c.id); return id >= 12 && id <= 24; });
+    const blackSwan = characters.filter(c => { const id = parseInt(c.id); return id >= 9 && id <= 12; });
+    const unknown = characters.filter(c => { const id = parseInt(c.id); return id >= 13 && id <= 24; });
 
     if (loading) {
         return (
