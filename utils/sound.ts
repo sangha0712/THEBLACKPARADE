@@ -4,6 +4,7 @@
 // Singleton AudioContext
 let audioCtx: AudioContext | null = null;
 let ambienceNodes: { stop: () => void } | null = null;
+let transitionLoopNodes: { stop: () => void } | null = null; // Re-introduced for Transition Loop
 
 const getAudioContext = () => {
     if (!audioCtx) {
@@ -102,6 +103,7 @@ export const stopAmbience = () => {
 
 // --- UI SOUNDS (Minimal / Clean) ---
 
+// [CHANGED] Digital Tick (Dry, Sharp Sine Chirp)
 export const playDataBlip = () => {
     const ctx = getAudioContext();
     if (!ctx || ctx.state !== 'running') return;
@@ -110,15 +112,17 @@ export const playDataBlip = () => {
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     
-    // Very short, high-pitch tick (Data processing)
+    // Very short, high-pitch Sine "Chirp" (3000Hz)
+    osc.type = 'sine';
     osc.frequency.setValueAtTime(3000, t);
-    gain.gain.setValueAtTime(0.02, t);
-    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.03);
+    
+    gain.gain.setValueAtTime(0.05, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
 
     osc.connect(gain);
     gain.connect(ctx.destination);
     osc.start(t);
-    osc.stop(t + 0.04);
+    osc.stop(t + 0.05);
 };
 
 export const playHackingBlip = () => {
@@ -173,38 +177,146 @@ export const playErrorSound = () => {
 
 export const playAccessDeniedBeep = playErrorSound; // Re-use mechanical fail
 
+// [CHANGED] Single Rising Tone + Bass Kick (No melody)
 export const playAccessGranted = () => {
-    // Airy "breath" release
     const ctx = getAudioContext();
     if (!ctx) return;
     const t = ctx.currentTime;
 
-    const buffer = createWhiteNoise(ctx, 1.0);
-    const src = ctx.createBufferSource();
-    src.buffer = buffer;
+    // 1. Base Kick
+    const kickOsc = ctx.createOscillator();
+    const kickGain = ctx.createGain();
+    
+    kickOsc.frequency.setValueAtTime(150, t);
+    kickOsc.frequency.exponentialRampToValueAtTime(0.01, t + 0.5);
+    
+    kickGain.gain.setValueAtTime(0.5, t);
+    kickGain.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
+    
+    kickOsc.connect(kickGain);
+    kickGain.connect(ctx.destination);
+    kickOsc.start(t);
+    kickOsc.stop(t + 0.5);
 
-    const filter = ctx.createBiquadFilter();
-    filter.type = 'bandpass';
-    filter.frequency.setValueAtTime(400, t);
-    filter.frequency.linearRampToValueAtTime(2000, t + 0.5); // Upward sweep
+    // 2. Rising Tone (Swipe)
+    const toneOsc = ctx.createOscillator();
+    const toneGain = ctx.createGain();
 
-    const gain = ctx.createGain();
-    gain.gain.setValueAtTime(0, t);
-    gain.gain.linearRampToValueAtTime(0.1, t + 0.1);
-    gain.gain.linearRampToValueAtTime(0, t + 0.8);
+    toneOsc.type = 'sine';
+    toneOsc.frequency.setValueAtTime(400, t);
+    toneOsc.frequency.linearRampToValueAtTime(1200, t + 0.3);
 
-    src.connect(filter);
-    filter.connect(gain);
-    gain.connect(ctx.destination);
-    src.start(t);
+    toneGain.gain.setValueAtTime(0.1, t);
+    toneGain.gain.linearRampToValueAtTime(0, t + 0.3);
+
+    toneOsc.connect(toneGain);
+    toneGain.connect(ctx.destination);
+    toneOsc.start(t);
+    toneOsc.stop(t + 0.3);
 };
 
-export const playAccessCompleted = playAccessGranted;
+// [CHANGED] Heavy Bass Drop + High Pitch Ping
+export const playAccessCompleted = () => {
+    const ctx = getAudioContext();
+    if (!ctx) return;
+    const t = ctx.currentTime;
+
+    // 1. Heavy Bass Drop
+    const bassOsc = ctx.createOscillator();
+    const bassGain = ctx.createGain();
+    
+    bassOsc.type = 'sine';
+    bassOsc.frequency.setValueAtTime(100, t);
+    bassOsc.frequency.exponentialRampToValueAtTime(30, t + 2.0); // Long drop
+    
+    bassGain.gain.setValueAtTime(0.8, t);
+    bassGain.gain.exponentialRampToValueAtTime(0.001, t + 2.0);
+
+    bassOsc.connect(bassGain);
+    bassGain.connect(ctx.destination);
+    bassOsc.start(t);
+    bassOsc.stop(t + 2.0);
+
+    // 2. High Pitch Ping
+    const pingOsc = ctx.createOscillator();
+    const pingGain = ctx.createGain();
+
+    pingOsc.type = 'sine';
+    pingOsc.frequency.setValueAtTime(2000, t);
+    
+    pingGain.gain.setValueAtTime(0.3, t);
+    pingGain.gain.exponentialRampToValueAtTime(0.001, t + 1.0); // Clear ring
+
+    pingOsc.connect(pingGain);
+    pingGain.connect(ctx.destination);
+    pingOsc.start(t);
+    pingOsc.stop(t + 1.0);
+};
 
 // --- LOOP & MEDICAL ---
 
-export const startTransitionLoop = () => {}; // Disabled for now to keep things organic
-export const stopTransitionLoop = () => {};
+// [CHANGED] FM Synthesis Data Stream Sound
+export const startTransitionLoop = () => {
+    if (transitionLoopNodes) return;
+    const ctx = getAudioContext();
+    if (!ctx) return;
+
+    // FM Synthesis: Modulator -> Carrier Frequency
+    const t = ctx.currentTime;
+
+    // Carrier (The sound we hear)
+    const carrier = ctx.createOscillator();
+    carrier.type = 'square';
+    carrier.frequency.value = 110; // Low base pitch
+
+    // Modulator (Controls the carrier pitch rapidly)
+    const modulator = ctx.createOscillator();
+    modulator.type = 'sawtooth';
+    modulator.frequency.value = 15; // 15Hz speed (Data processing speed "dodododo")
+
+    const modGain = ctx.createGain();
+    modGain.gain.value = 50; // Depth of modulation
+
+    // Filter to dampen the harsh square wave
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.value = 800;
+
+    const masterGain = ctx.createGain();
+    masterGain.gain.setValueAtTime(0.1, t);
+
+    // Connections
+    modulator.connect(modGain);
+    modGain.connect(carrier.frequency); // FM Modulation
+    carrier.connect(filter);
+    filter.connect(masterGain);
+    masterGain.connect(ctx.destination);
+
+    carrier.start(t);
+    modulator.start(t);
+
+    transitionLoopNodes = {
+        stop: () => {
+            const stopTime = ctx.currentTime;
+            masterGain.gain.linearRampToValueAtTime(0, stopTime + 0.2);
+            setTimeout(() => {
+                carrier.stop();
+                modulator.stop();
+                // Disconnect
+                carrier.disconnect();
+                modulator.disconnect();
+                modGain.disconnect();
+                filter.disconnect();
+                masterGain.disconnect();
+            }, 200);
+            transitionLoopNodes = null;
+        }
+    };
+};
+
+export const stopTransitionLoop = () => {
+    if (transitionLoopNodes) transitionLoopNodes.stop();
+};
 
 let monitorNodes: { stop: () => void } | null = null;
 export const stopMonitorSound = () => {
@@ -394,7 +506,7 @@ export const playSystemCorruptAlert = () => {
 
     // Output
     const masterGain = ctx.createGain();
-    masterGain.gain.setValueAtTime(0.275, t); // Volume 0.275 (Requested Adjustment)
+    masterGain.gain.setValueAtTime(0.275, t); // Volume 0.275 (Maintained from previous request)
     // Long decay to ensure sound persists until screen goes black (approx 2s later)
     masterGain.gain.exponentialRampToValueAtTime(0.001, t + 3.5);
 
