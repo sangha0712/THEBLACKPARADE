@@ -28,6 +28,7 @@ const getFactionInfo = (idStr: string) => {
     if (id >= 1 && id <= 4) return { name: 'ZERO HOUR', color: 'text-red-500', borderColor: 'border-red-600', bgGradient: 'from-red-900/10' };
     if (id >= 5 && id <= 8) return { name: 'AEGIS', color: 'text-cyan-400', borderColor: 'border-cyan-600', bgGradient: 'from-cyan-900/10' };
     if (id >= 9 && id <= 12) return { name: 'BLACK SWAN', color: 'text-purple-400', borderColor: 'border-purple-600', bgGradient: 'from-purple-900/10' };
+    if (id >= 15 && id <= 24) return { name: 'VARIOME', color: 'text-orange-500', borderColor: 'border-orange-600', bgGradient: 'from-orange-900/10' };
     return { name: 'UNKNOWN', color: 'text-gray-400', borderColor: 'border-gray-600', bgGradient: 'from-gray-900/10' };
 };
 
@@ -181,11 +182,13 @@ const CharacterCard: React.FC<CharacterCardProps> = ({ char, isSpecial, status, 
     // Determine border color on hover based on faction or default red
     const hoverBorderColor = faction.name === 'AEGIS' ? 'border-cyan-500' : 
                              faction.name === 'BLACK SWAN' ? 'border-purple-500' : 
+                             faction.name === 'VARIOME' ? 'border-orange-500' :
                              faction.name === 'UNKNOWN' ? 'border-gray-500' : 
                              'border-red-500';
 
     const textColor = faction.name === 'AEGIS' ? 'text-cyan-400' : 
                       faction.name === 'BLACK SWAN' ? 'text-purple-400' :
+                      faction.name === 'VARIOME' ? 'text-orange-400' :
                       faction.name === 'UNKNOWN' ? 'text-gray-400' :
                       'text-red-500';
 
@@ -496,11 +499,13 @@ const CharacterList: React.FC<CharacterListProps> = ({ onBack }) => {
     // 1-4: ZERO HOUR
     // 5-8: AEGIS
     // 9-12: BLACK SWAN (Updated to include 12)
-    // 13-24: UNKNOWN (Updated start from 13)
+    // 13-14: UNKNOWN (Range Updated)
+    // 15-24: VARIOME (New Range)
     const zeroHour = characters.filter(c => { const id = parseInt(c.id); return id >= 1 && id <= 4; });
     const aegis = characters.filter(c => { const id = parseInt(c.id); return id >= 5 && id <= 8; });
     const blackSwan = characters.filter(c => { const id = parseInt(c.id); return id >= 9 && id <= 12; });
-    const unknown = characters.filter(c => { const id = parseInt(c.id); return id >= 13 && id <= 24; });
+    const unknown = characters.filter(c => { const id = parseInt(c.id); return id >= 13 && id <= 14; });
+    const variome = characters.filter(c => { const id = parseInt(c.id); return id >= 15 && id <= 24; });
 
     if (loading) {
         return (
@@ -628,6 +633,29 @@ const CharacterList: React.FC<CharacterListProps> = ({ onBack }) => {
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {unknown.map(char => (
+                                 <CharacterCard 
+                                    key={char.id} 
+                                    char={char} 
+                                    isSpecial={false} 
+                                    status={charStatuses[char.id] || 'ALIVE'}
+                                    onClick={() => setSelectedCharacter(char)}
+                                 />
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                {/* 5. VARIOME (Orange) */}
+                {variome.length > 0 && (
+                    <div className="animate-[fadeIn_0.8s_ease-out]">
+                         <div className="flex items-center gap-3 mb-6 pb-2 border-b border-orange-900/30">
+                            <div className="w-2 h-2 bg-orange-600"></div>
+                            <h3 className="text-orange-500 font-mono text-lg tracking-[0.2em] font-bold">
+                                VARIOME // MUTATION
+                            </h3>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {variome.map(char => (
                                  <CharacterCard 
                                     key={char.id} 
                                     char={char} 

@@ -1,7 +1,18 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { login } from '../api';
-import { playErrorSound, playAccessDeniedBeep, initAudio, playDataBlip, playAccessGranted, playHackingBlip } from '../utils/sound';
+import { 
+    playErrorSound, 
+    playAccessDeniedBeep, 
+    initAudio, 
+    playDataBlip, 
+    playAccessGranted, 
+    playHackingBlip,
+    playWatcherPresence,
+    playSystemCorruptAlert,
+    playTerminationWhisper,
+    playTerminationScream
+} from '../utils/sound';
 
 interface LoginFormProps {
     onLoginSuccess: () => void;
@@ -274,10 +285,12 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess, onLoginFail, curr
             // 1. Trigger Watcher at 90s (90000ms)
             watcherTimer = setTimeout(() => {
                 setWatcherTriggered(true);
+                playWatcherPresence(); // Sound Effect: Deep drone + Tinnitus
                 
                 // 2. Trigger Notification 3s after Watcher
                 notifTimer = setTimeout(() => {
                     setNotificationStage('SHOW');
+                    playSystemCorruptAlert(); // Sound Effect: Glitchy Error Chime
 
                     // 3. Corrupt text 0.5s after Notification
                     corruptTimer = setTimeout(() => {
@@ -315,10 +328,12 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess, onLoginFail, curr
             return () => clearTimeout(timer);
         }
         if (terminationStage === 'TURN_AROUND') {
+            playTerminationWhisper(); // Sound Effect: Creepy Whisper/Hiss
             const timer = setTimeout(() => setTerminationStage('DO_NOT_TURN_AROUND'), 500);
             return () => clearTimeout(timer);
         }
         if (terminationStage === 'DO_NOT_TURN_AROUND') {
+            playTerminationScream(); // Sound Effect: Mechanical Scream
             const timer = setTimeout(() => setTerminationStage('FINAL_BLACKOUT'), 5000);
             return () => clearTimeout(timer);
         }
