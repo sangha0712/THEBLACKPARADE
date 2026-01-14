@@ -4,7 +4,6 @@
 // Singleton AudioContext
 let audioCtx: AudioContext | null = null;
 let ambienceNodes: { stop: () => void } | null = null;
-let transitionLoopNodes: { stop: () => void } | null = null;
 
 const getAudioContext = () => {
     if (!audioCtx) {
