@@ -506,7 +506,7 @@ export const playSystemCorruptAlert = () => {
 
     // Output
     const masterGain = ctx.createGain();
-    masterGain.gain.setValueAtTime(0.275, t); // Volume 0.275 (Maintained from previous request)
+    masterGain.gain.setValueAtTime(0.1, t); // CHANGED: Volume set to 0.1
     // Long decay to ensure sound persists until screen goes black (approx 2s later)
     masterGain.gain.exponentialRampToValueAtTime(0.001, t + 3.5);
 
